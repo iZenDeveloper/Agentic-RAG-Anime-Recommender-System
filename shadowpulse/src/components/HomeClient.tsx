@@ -1,13 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ScanExperience } from "@/components/ScanExperience";
 import type { Locale } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
+import type { Platform } from "@/lib/types";
+
+const ALL: Platform[] = ["x", "instagram", "tiktok", "facebook", "threads"];
 
 export function HomeClient() {
   const [locale, setLocale] = useState<Locale>("vi");
+  const search = useSearchParams();
+
+  const preset = useMemo(() => {
+    const handle = (search.get("handle") || "").replace(/^@/, "");
+    const platformsParam = search.get("platforms");
+    const platforms = (platformsParam || "x,instagram")
+      .split(",")
+      .map((p) => p.trim())
+      .filter((p): p is Platform => ALL.includes(p as Platform));
+    const auto = search.get("autoscan") === "1";
+    return {
+      handle,
+      platforms: platforms.length ? platforms : (["x", "instagram"] as Platform[]),
+      auto,
+    };
+  }, [search]);
 
   return (
     <>
@@ -34,7 +54,12 @@ export function HomeClient() {
           </div>
 
           <div className="relative mx-auto mt-10 max-w-2xl rise rise-delay-2">
-            <ScanExperience locale={locale} />
+            <ScanExperience
+              locale={locale}
+              defaultHandle={preset.handle}
+              defaultPlatforms={preset.platforms}
+              autoScan={preset.auto}
+            />
           </div>
         </section>
 

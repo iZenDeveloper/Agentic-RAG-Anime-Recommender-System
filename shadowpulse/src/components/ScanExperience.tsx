@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import type { Locale } from "@/lib/i18n";
 import { PLATFORM_LABEL, t } from "@/lib/i18n";
 import type { Platform, ScanJob } from "@/lib/types";
@@ -12,11 +12,15 @@ const ALL: Platform[] = ["x", "instagram", "tiktok", "facebook", "threads"];
 export function ScanExperience({
   locale,
   defaultPlatforms = ["x", "instagram"],
+  defaultHandle = "",
+  autoScan = false,
 }: {
   locale: Locale;
   defaultPlatforms?: Platform[];
+  defaultHandle?: string;
+  autoScan?: boolean;
 }) {
-  const [handle, setHandle] = useState("");
+  const [handle, setHandle] = useState(defaultHandle);
   const [platforms, setPlatforms] = useState<Platform[]>(defaultPlatforms);
   const [error, setError] = useState<string | null>(null);
   const [job, setJob] = useState<ScanJob | null>(null);
@@ -31,9 +35,8 @@ export function ScanExperience({
     );
   }
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!canSubmit) {
+  function runScan(nextHandle = handle, nextPlatforms = platforms) {
+    if (!nextHandle.trim() || nextPlatforms.length === 0) {
       setError(t(locale, "empty"));
       return;
     }
@@ -44,7 +47,10 @@ export function ScanExperience({
         const res = await fetch("/api/scan", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ handle, platforms }),
+          body: JSON.stringify({
+            handle: nextHandle,
+            platforms: nextPlatforms,
+          }),
         });
         const data = await res.json();
         if (res.status === 429) {
@@ -65,6 +71,18 @@ export function ScanExperience({
       }
     });
   }
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    runScan();
+  }
+
+  useEffect(() => {
+    if (autoScan && defaultHandle) {
+      runScan(defaultHandle, defaultPlatforms);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const overall = useMemo(() => {
     if (!job) return null;
@@ -126,6 +144,8 @@ export function ScanExperience({
             className="w-full flex-1 rounded-xl border border-[var(--line)] bg-[#0a151c]/80 px-4 py-3.5 text-base outline-none ring-[var(--signal)] placeholder:text-[var(--muted)] focus:ring-1"
             autoComplete="off"
             spellCheck={false}
+            name="handle"
+            id="scan-handle"
           />
           <button
             type="submit"
