@@ -12,7 +12,7 @@ const HANDLE_RULES: Record<Platform, RegExp> = {
   x: /^[A-Za-z0-9_]{1,15}$/,
   instagram: /^[A-Za-z0-9._]{1,30}$/,
   tiktok: /^[A-Za-z0-9._]{2,24}$/,
-  facebook: /^[A-Za-z0-9.]{5,50}$/,
+  facebook: /^[A-Za-z0-9.]{3,50}$/,
   threads: /^[A-Za-z0-9._]{1,30}$/,
 };
 

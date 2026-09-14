@@ -27,14 +27,27 @@ export const instagramAdapter: PlatformAdapter = {
       );
       const ms = Date.now() - started;
       const text = res.text;
-      const notFound =
+      const hardNotFound =
         res.status === 404 ||
-        /Sorry, this page isn't available|page isn't available/i.test(text);
+        /Sorry, this page isn't available\.?|The link you followed may be broken/i.test(
+          text,
+        );
+      // Instagram often returns a login shell (title "Instagram") without profile JSON.
+      const loginWall =
+        !hardNotFound &&
+        (/<title>Instagram<\/title>/i.test(text) ||
+          /login_form|Log into Instagram|Create an account/i.test(text)) &&
+        !new RegExp(`"${ctx.handle}"|"username":"${ctx.handle}"`, "i").test(text) &&
+        !/property="og:title"/i.test(text);
+
       const isPrivate =
-        /This account is private|"is_private":true/i.test(text) && !notFound;
+        /This account is private|"is_private":true/i.test(text) && !hardNotFound;
       const exists =
-        !notFound &&
-        (res.ok || /og:title|profilePage_|"username"/i.test(text));
+        !hardNotFound &&
+        !loginWall &&
+        (/property="og:title"/i.test(text) ||
+          new RegExp(`"username"\\s*:\\s*"${ctx.handle}"`, "i").test(text) ||
+          /profilePage_/i.test(text));
 
       account = {
         platform: "instagram",
@@ -48,38 +61,42 @@ export const instagramAdapter: PlatformAdapter = {
           platform: "instagram",
           signalKey: "ig.account_status",
           label: "Profile status",
-          status: notFound
+          status: hardNotFound
             ? "restricted"
             : exists
               ? isPrivate
                 ? "inconclusive"
                 : "clear"
               : "inconclusive",
-          confidence: notFound || exists ? "high" : "low",
+          confidence: hardNotFound || exists ? "high" : loginWall ? "medium" : "low",
           evidence: {
             method: "Public profile HTML",
-            observed: notFound
+            observed: hardNotFound
               ? "Profile page not available"
-              : isPrivate
-                ? "Account appears private"
-                : exists
-                  ? "Public profile reachable"
-                  : `Lookup ambiguous (HTTP ${res.status})`,
+              : loginWall
+                ? "Instagram returned a login wall — public profile metadata unavailable to this probe"
+                : isPrivate
+                  ? "Account appears private"
+                  : exists
+                    ? "Public profile metadata reachable"
+                    : `Lookup ambiguous (HTTP ${res.status})`,
             expected: "Public Instagram profile",
             manualUrl: url,
-            reasonCode: notFound
+            reasonCode: hardNotFound
               ? "not_found"
-              : isPrivate
-                ? "private"
-                : exists
-                  ? "public_ok"
-                  : "lookup_incomplete",
+              : loginWall
+                ? "login_wall"
+                : isPrivate
+                  ? "private"
+                  : exists
+                    ? "public_ok"
+                    : "lookup_incomplete",
           },
           probeMs: ms,
         }),
       ];
 
-      if (!exists || isPrivate) {
+      if (hardNotFound || isPrivate) {
         signals.push(
           inconclusive(
             "instagram",
@@ -105,7 +122,7 @@ export const instagramAdapter: PlatformAdapter = {
               method: "Public username search",
               observed:
                 "Instagram search is personalized and often login-gated — no stable logged-out probe",
-              expected: "Profile in account search results",
+              expected: "Profile appears in account search",
               manualUrl: `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(ctx.handle)}`,
               reasonCode: "search_surface_blocked",
             },
@@ -151,11 +168,13 @@ export const instagramAdapter: PlatformAdapter = {
       return {
         account,
         signals,
-        earlyStopReason: !exists
+        earlyStopReason: hardNotFound
           ? "account_not_found"
-          : isPrivate
-            ? "private"
-            : undefined,
+          : loginWall
+            ? "login_wall"
+            : isPrivate
+              ? "private"
+              : undefined,
       };
     } catch (err) {
       const ms = Date.now() - started;

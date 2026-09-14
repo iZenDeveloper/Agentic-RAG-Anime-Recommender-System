@@ -1,6 +1,7 @@
 import { profileUrl } from "../normalize";
 import type { AccountSnapshot, SignalResult } from "../types";
 import {
+  fetchJson,
   fetchText,
   inconclusive,
   makeSignal,
@@ -9,6 +10,12 @@ import {
   PROBE_TIMEOUT_MS,
   withTimeout,
 } from "./types";
+
+type OEmbed = {
+  title?: string;
+  author_name?: string;
+  author_url?: string;
+};
 
 export const tiktokAdapter: PlatformAdapter = {
   platform: "tiktok",
@@ -22,25 +29,36 @@ export const tiktokAdapter: PlatformAdapter = {
     };
 
     try {
-      const res = await withTimeout(PROBE_TIMEOUT_MS, (signal) =>
-        fetchText(url, signal),
-      );
+      const oembedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`;
+      const [oembed, html] = await withTimeout(PROBE_TIMEOUT_MS, async (signal) => {
+        const [a, b] = await Promise.all([
+          fetchJson<OEmbed>(oembedUrl, signal),
+          fetchText(url, signal),
+        ]);
+        return [a, b] as const;
+      });
       const ms = Date.now() - started;
-      const notFound =
-        res.status === 404 ||
-        /Couldn't find this account|page not available/i.test(res.text);
-      const exists =
-        !notFound &&
-        (res.ok ||
-          new RegExp(`@"?${ctx.handle}"?|"uniqueId":"${ctx.handle}"`, "i").test(
-            res.text,
-          ));
+
+      // oEmbed is the reliable public existence check. Generic HTML often embeds
+      // "Couldn't find this account" strings even for live profiles.
+      const oembedExists = Boolean(
+        oembed.ok &&
+          oembed.data &&
+          (oembed.data.author_url?.toLowerCase().includes(`@${ctx.handle}`) ||
+            oembed.data.author_name),
+      );
+      const hardNotFound =
+        oembed.status === 400 ||
+        oembed.status === 404 ||
+        html.status === 404;
+      const exists = oembedExists;
+      const isPrivate = /"privateAccount":true/i.test(html.text);
 
       account = {
         platform: "tiktok",
         handle: ctx.handle,
         exists,
-        protectedOrPrivate: /privateAccount":true/i.test(res.text),
+        protectedOrPrivate: isPrivate,
       };
 
       const signals: SignalResult[] = [
@@ -48,32 +66,28 @@ export const tiktokAdapter: PlatformAdapter = {
           platform: "tiktok",
           signalKey: "tt.account_status",
           label: "Profile status",
-          status: notFound
-            ? "restricted"
-            : exists
-              ? account.protectedOrPrivate
-                ? "inconclusive"
-                : "clear"
+          status: exists
+            ? isPrivate
+              ? "inconclusive"
+              : "clear"
+            : hardNotFound
+              ? "restricted"
               : "inconclusive",
-          confidence: notFound || exists ? "high" : "low",
+          confidence: exists || hardNotFound ? "high" : "low",
           evidence: {
-            method: "Public profile HTML",
-            observed: notFound
-              ? "Profile not found"
-              : account.protectedOrPrivate
-                ? "Account appears private"
-                : exists
-                  ? "Public profile reachable"
-                  : `Lookup ambiguous (HTTP ${res.status})`,
+            method: "TikTok oEmbed + public profile HTML",
+            observed: exists
+              ? `oEmbed author: ${oembed.data?.author_name ?? ctx.handle}`
+              : hardNotFound
+                ? "oEmbed/profile returned not-found"
+                : `Could not confirm profile (oEmbed HTTP ${oembed.status}, HTML ${html.status})`,
             expected: "Public TikTok profile",
             manualUrl: url,
-            reasonCode: notFound
-              ? "not_found"
-              : account.protectedOrPrivate
-                ? "private"
-                : exists
-                  ? "public_ok"
-                  : "lookup_incomplete",
+            reasonCode: exists
+              ? "public_ok"
+              : hardNotFound
+                ? "not_found"
+                : "lookup_incomplete",
           },
           probeMs: ms,
         }),
@@ -127,7 +141,11 @@ export const tiktokAdapter: PlatformAdapter = {
       return {
         account,
         signals,
-        earlyStopReason: !exists ? "account_not_found" : undefined,
+        earlyStopReason: hardNotFound
+          ? "account_not_found"
+          : !exists
+            ? "lookup_incomplete"
+            : undefined,
       };
     } catch (err) {
       const ms = Date.now() - started;
@@ -153,7 +171,7 @@ function defaultFailSignals(
       "tt.account_status",
       "Profile status",
       {
-        method: "Public profile HTML",
+        method: "TikTok oEmbed + public profile HTML",
         observed: timedOut ? "Probe timed out" : "Probe failed",
         expected: "Public profile",
         manualUrl: url,
