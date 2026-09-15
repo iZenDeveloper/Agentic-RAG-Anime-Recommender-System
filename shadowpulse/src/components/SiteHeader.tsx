@@ -12,29 +12,45 @@ export function SiteHeader({
   onLocale: (l: Locale) => void;
 }) {
   return (
-    <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5">
-      <Link href="/" className="brand-mark font-[family-name:var(--font-display)] text-2xl font-extrabold tracking-tight text-[var(--ink)]">
-        Shadow<span className="text-[var(--signal)]">Pulse</span>
+    <header className="mx-auto flex w-full max-w-5xl items-baseline justify-between gap-4 px-5 py-6">
+      <Link href="/" className="display text-xl text-[var(--ink)] sm:text-2xl">
+        ShadowPulse
       </Link>
-      <nav className="flex items-center gap-4 text-sm text-[var(--muted)]">
-        <Link href="/methodology" className="transition hover:text-[var(--ink)]">
+      <nav className="flex items-center gap-5 text-sm text-[var(--mute)]">
+        <Link href="/methodology" className="hover:text-[var(--ink)]">
           {t(locale, "navMethod")}
         </Link>
-        <Link href="/check/x" className="hidden transition hover:text-[var(--ink)] sm:inline">
+        <Link
+          href="/check/x"
+          className="hidden hover:text-[var(--ink)] sm:inline"
+        >
           {t(locale, "manualCheck")}
         </Link>
-        <div className="flex overflow-hidden rounded-md border border-[var(--line)] text-xs">
+        <div className="mono flex gap-1 text-[11px]">
           <button
             type="button"
             onClick={() => onLocale("vi")}
-            className={`px-2.5 py-1.5 ${locale === "vi" ? "bg-[var(--signal)] text-[#04201b]" : "hover:bg-white/5"}`}
+            className={`px-1.5 py-0.5 ${
+              locale === "vi"
+                ? "text-[var(--ink)] underline decoration-[var(--signal)] decoration-2 underline-offset-4"
+                : "hover:text-[var(--ink)]"
+            }`}
+            aria-pressed={locale === "vi"}
           >
             VI
           </button>
+          <span aria-hidden className="text-[var(--line-strong)]">
+            /
+          </span>
           <button
             type="button"
             onClick={() => onLocale("en")}
-            className={`px-2.5 py-1.5 ${locale === "en" ? "bg-[var(--signal)] text-[#04201b]" : "hover:bg-white/5"}`}
+            className={`px-1.5 py-0.5 ${
+              locale === "en"
+                ? "text-[var(--ink)] underline decoration-[var(--signal)] decoration-2 underline-offset-4"
+                : "hover:text-[var(--ink)]"
+            }`}
+            aria-pressed={locale === "en"}
           >
             EN
           </button>

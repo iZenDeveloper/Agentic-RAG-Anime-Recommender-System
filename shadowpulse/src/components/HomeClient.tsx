@@ -16,44 +16,35 @@ export function HomeClient() {
 
   const preset = useMemo(() => {
     const handle = (search.get("handle") || "").replace(/^@/, "");
-    const platformsParam = search.get("platforms");
-    const platforms = (platformsParam || "x,instagram")
+    const platforms = (search.get("platforms") || "x,instagram")
       .split(",")
       .map((p) => p.trim())
       .filter((p): p is Platform => ALL.includes(p as Platform));
-    const auto = search.get("autoscan") === "1";
     return {
       handle,
-      platforms: platforms.length ? platforms : (["x", "instagram"] as Platform[]),
-      auto,
+      platforms: platforms.length
+        ? platforms
+        : (["x", "instagram"] as Platform[]),
+      auto: search.get("autoscan") === "1",
     };
   }, [search]);
 
   return (
     <>
       <SiteHeader locale={locale} onLocale={setLocale} />
-      <main className="relative mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-6xl flex-col px-5 pb-20 pt-8">
-        <section className="relative mb-14 overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[#0a171f]/55 px-6 py-14 sm:px-12 sm:py-20">
-          <div className="pointer-events-none absolute inset-0">
-            <div className="pulse-ring left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2" />
-            <div className="pulse-ring left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2" />
-            <div className="pulse-ring left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(7,16,22,0.75)_75%)]" />
-          </div>
+      <main className="mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-5xl flex-col px-5 pb-20 pt-4">
+        <section className="relative mb-16 pt-8 sm:pt-14">
+          <p className="enter display text-[clamp(3.2rem,12vw,7.5rem)] leading-[0.92] text-[var(--ink)]">
+            ShadowPulse
+          </p>
+          <h1 className="enter enter-d1 mt-8 max-w-2xl text-[1.35rem] font-semibold leading-snug tracking-[-0.02em] text-[var(--ink)] sm:text-[1.75rem]">
+            {t(locale, "tagline")}
+          </h1>
+          <p className="enter enter-d2 mt-4 max-w-xl text-[1.05rem] leading-relaxed text-[var(--mute)]">
+            {t(locale, "heroSupport")}
+          </p>
 
-          <div className="relative mx-auto max-w-3xl text-center">
-            <p className="rise brand-mark font-[family-name:var(--font-display)] text-5xl font-extrabold tracking-tight sm:text-7xl">
-              Shadow<span className="text-[var(--signal)]">Pulse</span>
-            </p>
-            <h1 className="rise rise-delay-1 mt-6 font-[family-name:var(--font-display)] text-2xl font-semibold leading-snug text-[var(--ink)] sm:text-3xl">
-              {t(locale, "tagline")}
-            </h1>
-            <p className="rise rise-delay-2 mx-auto mt-4 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:text-lg">
-              {t(locale, "heroSupport")}
-            </p>
-          </div>
-
-          <div className="relative mx-auto mt-10 max-w-2xl rise rise-delay-2">
+          <div className="enter enter-d2 mt-12 max-w-2xl">
             <ScanExperience
               locale={locale}
               defaultHandle={preset.handle}
@@ -63,9 +54,9 @@ export function HomeClient() {
           </div>
         </section>
 
-        <footer className="mt-auto border-t border-[var(--line)] pt-8 text-sm text-[var(--muted)]">
+        <footer className="mt-auto border-t border-[var(--line)] pt-8 text-sm text-[var(--mute)]">
           <p>{t(locale, "footerTrust")}</p>
-          <div className="mt-3 flex flex-wrap gap-4">
+          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
             <a href="/methodology" className="hover:text-[var(--ink)]">
               {t(locale, "methodology")}
             </a>

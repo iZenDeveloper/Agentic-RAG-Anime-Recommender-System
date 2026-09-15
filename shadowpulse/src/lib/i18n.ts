@@ -3,7 +3,7 @@ export type Locale = "vi" | "en";
 const dict = {
   vi: {
     brand: "ShadowPulse",
-    tagline: "Biết nền tảng đang giấu gì — và mức độ chắc chắn của kết luận đó.",
+    tagline: "Biết nền tảng đang giấu gì, và mức độ chắc chắn của kết luận đó.",
     heroSupport:
       "Quét tín hiệu hạn chế hiển thị công khai trên X, Instagram, TikTok, Facebook và Threads. Không mật khẩu. Không verdict bịa.",
     cta: "Quét ngay",
@@ -17,8 +17,8 @@ const dict = {
       "ShadowPulse quan sát dữ liệu công khai. Đây không phải thông báo từ X, Meta hay TikTok. Điểm số bỏ qua các tín hiệu không đo được. Hãy đối chiếu Account Status / Under the Hood trong app.",
     nextSteps: "3 việc nên làm tiếp",
     next1: "Mở công cụ official trong app (Account Status / Under the Hood).",
-    next2: "Nếu Inconclusive vì thiếu bài/reply — đăng 1 bài test công khai rồi quét lại.",
-    next3: "Đừng đổi strategy chỉ vì tụt view — tụt view ≠ shadowban.",
+    next2: "Nếu Inconclusive vì thiếu bài/reply: đăng 1 bài test công khai rồi quét lại.",
+    next3: "Đừng đổi strategy chỉ vì tụt view. Tụt view không đồng nghĩa shadowban.",
     alertTitle: "Nhận alert khi tín hiệu đổi",
     alertPlaceholder: "email@domain.com",
     alertCta: "Giữ chỗ monitor",
@@ -39,14 +39,13 @@ const dict = {
     empty: "Nhập handle và chọn ít nhất một nền tảng.",
     footerTrust: "Trung thực hơn đối thủ. “Không rõ” tốt hơn “bị ban 100%”.",
     navMethod: "Phương pháp",
-    navFaq: "FAQ",
     resultFor: "Báo cáo cho",
     measured: "Đo được",
     officialCta: "Mở hướng dẫn check official",
   },
   en: {
     brand: "ShadowPulse",
-    tagline: "See what platforms are hiding — and how sure we are.",
+    tagline: "See what platforms are hiding, and how sure we are.",
     heroSupport:
       "Public visibility probes across X, Instagram, TikTok, Facebook, and Threads. No passwords. No fake verdicts.",
     cta: "Scan now",
@@ -60,8 +59,8 @@ const dict = {
       "ShadowPulse observes public data only. This is not a notice from X, Meta, or TikTok. Scores ignore unmeasurable signals. Cross-check Account Status / Under the Hood in-app.",
     nextSteps: "3 things to do next",
     next1: "Open the official tool in-app (Account Status / Under the Hood).",
-    next2: "If Inconclusive for missing posts/replies — publish one public test, then rescan.",
-    next3: "Don’t overhaul strategy for a view drop alone — views ≠ shadowban.",
+    next2: "If Inconclusive for missing posts/replies: publish one public test, then rescan.",
+    next3: "Don’t overhaul strategy for a view drop alone. Views are not a shadowban.",
     alertTitle: "Get alerted when signals change",
     alertPlaceholder: "email@domain.com",
     alertCta: "Join monitor waitlist",
@@ -82,7 +81,6 @@ const dict = {
     empty: "Enter a handle and pick at least one platform.",
     footerTrust: "Honesty over hype. “Unclear” beats “100% banned”.",
     navMethod: "Methodology",
-    navFaq: "FAQ",
     resultFor: "Report for",
     measured: "Measurable",
     officialCta: "Open official check guide",
@@ -91,7 +89,11 @@ const dict = {
 
 export type DictKey = keyof (typeof dict)["vi"];
 
-export function t(locale: Locale, key: DictKey, vars?: Record<string, string | number>) {
+export function t(
+  locale: Locale,
+  key: DictKey,
+  vars?: Record<string, string | number>,
+) {
   let value: string = dict[locale][key];
   if (vars) {
     for (const [k, v] of Object.entries(vars)) {
@@ -101,7 +103,10 @@ export function t(locale: Locale, key: DictKey, vars?: Record<string, string | n
   return value;
 }
 
-export const PLATFORM_LABEL: Record<string, { vi: string; en: string }> = {
+export const PLATFORM_LABEL: Record<
+  "x" | "instagram" | "tiktok" | "facebook" | "threads",
+  { vi: string; en: string }
+> = {
   x: { vi: "X", en: "X" },
   instagram: { vi: "Instagram", en: "Instagram" },
   tiktok: { vi: "TikTok", en: "TikTok" },

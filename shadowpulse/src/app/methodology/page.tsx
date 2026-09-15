@@ -9,23 +9,19 @@ export const metadata = {
 export default function MethodologyPage() {
   return (
     <main className="mx-auto max-w-3xl px-5 py-12">
-      <Link href="/" className="text-sm text-[var(--signal)]">
+      <Link href="/" className="text-sm text-[var(--signal)] hover:underline">
         ← ShadowPulse
       </Link>
-      <h1 className="mt-6 font-[family-name:var(--font-display)] text-4xl font-bold">
-        Phương pháp đo
-      </h1>
-      <p className="mt-4 text-[var(--muted)] leading-relaxed">
+      <h1 className="display mt-6 text-4xl text-[var(--ink)]">Phương pháp đo</h1>
+      <p className="mt-4 leading-relaxed text-[var(--mute)]">
         Sản phẩm sống hay chết ở độ trung thực. Chúng tôi chỉ quan sát dữ liệu
         công khai — cùng thứ một người lạ có thể thấy — và gắn confidence cho
         từng tín hiệu.
       </p>
 
-      <section className="mt-10 space-y-4 text-sm leading-relaxed text-[var(--ink)]/90">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
-          Quy tắc
-        </h2>
-        <ul className="list-disc space-y-2 pl-5 text-[var(--muted)]">
+      <section className="mt-10 space-y-4 text-sm leading-relaxed">
+        <h2 className="display text-2xl">Quy tắc</h2>
+        <ul className="list-disc space-y-2 pl-5 text-[var(--mute)]">
           <li>Chỉ đo tín hiệu public: search, gợi ý, bài công khai, metadata.</li>
           <li>Không suy diễn ranking nội bộ thành “bị shadowban”.</li>
           <li>Thiếu dữ liệu / platform chặn / probe fail → Inconclusive.</li>
@@ -35,10 +31,8 @@ export default function MethodologyPage() {
       </section>
 
       <section className="mt-10 space-y-4 text-sm">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
-          MVP theo nền tảng
-        </h2>
-        <div className="space-y-3 text-[var(--muted)]">
+        <h2 className="display text-2xl">MVP theo nền tảng</h2>
+        <div className="space-y-3 text-[var(--mute)]">
           <p>
             <strong className="text-[var(--ink)]">X:</strong> profile, suggestion
             approximation, from: search (khi surface mở), ghost/deboost khi có
@@ -56,7 +50,7 @@ export default function MethodologyPage() {
         </div>
       </section>
 
-      <p className="mt-12 rounded-xl border border-[var(--warn)]/30 bg-[var(--warn)]/10 p-4 text-sm text-[#f3e2b0]">
+      <p className="mt-12 border-l-2 border-[var(--warn)] pl-4 text-sm leading-relaxed text-[var(--warn)]">
         ShadowPulse không phải thông báo từ X, Meta hay TikTok. Không hứa gỡ
         ban. Không scrape nội dung private.
       </p>

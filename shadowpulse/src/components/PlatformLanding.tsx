@@ -20,23 +20,28 @@ export function PlatformLanding({
   return (
     <>
       <SiteHeader locale={locale} onLocale={setLocale} />
-      <main className="mx-auto max-w-4xl px-5 pb-20 pt-8">
-        <p className="text-xs uppercase tracking-[0.2em] text-[var(--signal)]">
-          ShadowPulse / {platform}
-        </p>
-        <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl font-bold sm:text-5xl">
+      <main className="mx-auto max-w-5xl px-5 pb-20 pt-8">
+        <h1 className="display text-[clamp(2.2rem,6vw,3.8rem)] leading-[1.05] text-[var(--ink)]">
           {title}
         </h1>
-        <p className="mt-4 max-w-2xl text-[var(--muted)]">{blurb}</p>
-        <div className="mt-10">
+        <p className="mt-4 max-w-2xl text-[1.05rem] leading-relaxed text-[var(--mute)]">
+          {blurb}
+        </p>
+        <div className="mt-12 max-w-2xl">
           <ScanExperience locale={locale} defaultPlatforms={[platform]} />
         </div>
-        <p className="mt-10 text-sm text-[var(--muted)]">
-          <Link href="/methodology" className="text-[var(--signal)]">
+        <p className="mt-12 text-sm text-[var(--mute)]">
+          <Link
+            href="/methodology"
+            className="text-[var(--signal)] hover:underline"
+          >
             Đọc phương pháp đo
-          </Link>{" "}
-          ·{" "}
-          <Link href={`/check/${platform}`} className="text-[var(--signal)]">
+          </Link>
+          {" · "}
+          <Link
+            href={`/check/${platform}`}
+            className="text-[var(--signal)] hover:underline"
+          >
             Check tay 2 phút
           </Link>
         </p>

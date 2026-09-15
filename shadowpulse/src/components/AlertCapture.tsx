@@ -33,26 +33,26 @@ export function AlertCapture({
   }
 
   return (
-    <div className="rounded-2xl border border-[var(--line)] p-5">
-      <h3 className="font-[family-name:var(--font-display)] text-xl font-semibold">
-        {t(locale, "alertTitle")}
-      </h3>
+    <div>
+      <h3 className="display text-2xl">{t(locale, "alertTitle")}</h3>
       {done ? (
-        <p className="mt-4 text-sm text-[var(--signal)]">{t(locale, "alertThanks")}</p>
+        <p className="mt-4 text-sm text-[var(--signal)]">
+          {t(locale, "alertThanks")}
+        </p>
       ) : (
-        <form onSubmit={submit} className="mt-4 flex flex-col gap-3">
+        <form onSubmit={submit} className="mt-4 flex flex-col gap-4">
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={t(locale, "alertPlaceholder")}
-            className="rounded-xl border border-[var(--line)] bg-black/20 px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-[var(--signal)]"
+            className="field"
           />
           <button
             type="submit"
             disabled={busy}
-            className="rounded-xl border border-[var(--signal)]/40 bg-[var(--signal)]/10 px-4 py-2.5 text-sm font-semibold text-[var(--signal)] hover:bg-[var(--signal)]/20 disabled:opacity-50"
+            className="btn-primary self-start px-5 py-2.5 text-sm font-semibold disabled:opacity-50"
           >
             {t(locale, "alertCta")}
           </button>

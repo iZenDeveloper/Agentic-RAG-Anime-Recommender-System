@@ -62,7 +62,9 @@ export function ScanExperience({
           return;
         }
         if (!res.ok || !data.job) {
-          setError(locale === "vi" ? "Quét thất bại. Thử lại." : "Scan failed. Try again.");
+          setError(
+            locale === "vi" ? "Quét thất bại. Thử lại." : "Scan failed. Try again.",
+          );
           return;
         }
         setJob(data.job as ScanJob);
@@ -111,136 +113,139 @@ export function ScanExperience({
 
   return (
     <div className="w-full">
-      <form onSubmit={onSubmit} className="mx-auto w-full max-w-2xl">
-        <label className="mb-2 block text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
-          {t(locale, "platforms")}
-        </label>
-        <div className="mb-4 flex flex-wrap gap-2">
-          {ALL.map((p) => {
-            const on = platforms.includes(p);
-            return (
-              <button
-                key={p}
-                type="button"
-                onClick={() => toggle(p)}
-                className={`rounded-lg border px-3 py-1.5 text-sm transition ${
-                  on
-                    ? "border-[var(--signal)] bg-[var(--signal)]/10 text-[var(--ink)]"
-                    : "border-[var(--line)] text-[var(--muted)] hover:border-white/25"
-                }`}
-                style={on ? { boxShadow: `0 0 0 1px ${PLATFORM_ACCENT[p]}22` } : undefined}
-              >
-                {PLATFORM_LABEL[p][locale]}
-              </button>
-            );
-          })}
+      <form onSubmit={onSubmit} className="w-full">
+        <p className="mb-3 text-sm text-[var(--mute)]">{t(locale, "platforms")}</p>
+        <div className="mb-6 flex flex-wrap gap-x-5 gap-y-2">
+          {ALL.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => toggle(p)}
+              className="platform-toggle"
+              aria-pressed={platforms.includes(p)}
+            >
+              {PLATFORM_LABEL[p][locale]}
+            </button>
+          ))}
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <input
-            value={handle}
-            onChange={(e) => setHandle(e.target.value)}
-            placeholder={t(locale, "placeholder")}
-            className="w-full flex-1 rounded-xl border border-[var(--line)] bg-[#0a151c]/80 px-4 py-3.5 text-base outline-none ring-[var(--signal)] placeholder:text-[var(--muted)] focus:ring-1"
-            autoComplete="off"
-            spellCheck={false}
-            name="handle"
-            id="scan-handle"
-          />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+          <div className="flex-1">
+            <input
+              value={handle}
+              onChange={(e) => setHandle(e.target.value)}
+              placeholder={t(locale, "placeholder")}
+              className="field"
+              autoComplete="off"
+              spellCheck={false}
+              name="handle"
+              id="scan-handle"
+            />
+          </div>
           <button
             type="submit"
             disabled={pending || !canSubmit}
-            className="rounded-xl bg-[var(--signal)] px-6 py-3.5 font-semibold text-[#04201b] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+            className="btn-primary px-6 py-3 text-sm font-semibold tracking-wide"
           >
             {pending ? "…" : t(locale, "cta")}
           </button>
         </div>
-        {error ? <p className="mt-3 text-sm text-[var(--danger)]">{error}</p> : null}
+        {error ? (
+          <p className="mt-3 text-sm text-[var(--danger)]">{error}</p>
+        ) : null}
         {pending ? (
-          <div className="scan-bar mt-4 h-1 rounded-full bg-white/10">
-            <span className="sr-only">{t(locale, "scanning")}</span>
+          <div className="mt-5">
+            <div className="scan-ink" />
+            <p className="mt-2 text-sm text-[var(--mute)]">
+              {t(locale, "scanning")}
+            </p>
           </div>
         ) : null}
       </form>
 
       {job && overall ? (
-        <section className="mx-auto mt-12 w-full max-w-4xl rise">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <section className="mt-14 enter">
+          <div className="mb-2 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-sm text-[var(--muted)]">{t(locale, "resultFor")}</p>
-              <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold">
+              <p className="text-sm text-[var(--mute)]">
+                {t(locale, "resultFor")}
+              </p>
+              <h2 className="display text-3xl text-[var(--ink)] sm:text-4xl">
                 @{job.handleNorm}
               </h2>
-              <p className="mt-1 font-mono text-xs text-[var(--muted)]">
+              <p className="mono mt-1 text-xs text-[var(--mute)]">
                 {job.finishedAt || job.createdAt} · UTC
               </p>
             </div>
             <button
               type="button"
               onClick={share}
-              className="rounded-lg border border-[var(--line)] px-3 py-2 text-sm text-[var(--muted)] hover:text-[var(--ink)]"
+              className="border-b border-[var(--line-strong)] pb-0.5 text-sm text-[var(--mute)] hover:text-[var(--ink)]"
             >
-              {copied ? "✓" : t(locale, "share")}
+              {copied ? "Copied" : t(locale, "share")}
             </button>
           </div>
 
-          <div className="mb-8 rounded-2xl border border-[var(--line)] bg-gradient-to-br from-white/[0.05] to-transparent p-6">
-            <ScoreRing
-              score={overall.score}
-              measurable={overall.measurable}
-              total={overall.total}
-              locale={locale}
-            />
-          </div>
+          <ScoreRing
+            score={overall.score}
+            measurable={overall.measurable}
+            total={overall.total}
+            locale={locale}
+          />
 
-          <p className="mb-8 rounded-xl border border-[var(--warn)]/30 bg-[var(--warn)]/10 p-4 text-sm leading-relaxed text-[#f3e2b0]">
+          <p className="mt-6 max-w-3xl border-l-2 border-[var(--warn)] pl-4 text-sm leading-relaxed text-[var(--warn)]">
             {t(locale, "disclaimer")}
           </p>
 
-          <div className="space-y-10">
+          <div className="mt-12 space-y-12">
             {job.reports.map((report) => (
               <div key={report.platform}>
-                <div className="mb-4 flex flex-wrap items-baseline gap-3">
+                <div className="mb-2 flex flex-wrap items-baseline gap-3">
                   <h3
-                    className="font-[family-name:var(--font-display)] text-2xl font-bold"
+                    className="display text-2xl"
                     style={{ color: PLATFORM_ACCENT[report.platform] }}
                   >
                     {PLATFORM_LABEL[report.platform][locale]}
                   </h3>
-                  <span className="text-sm text-[var(--muted)]">
+                  <span className="mono text-xs text-[var(--mute)]">
                     {t(locale, "score")}:{" "}
-                    {report.visibilityScore == null ? "—" : report.visibilityScore}
+                    {report.visibilityScore == null
+                      ? "—"
+                      : report.visibilityScore}
                     {" · "}
-                    {t(locale, "measured")}: {report.measurableCount}/{report.totalSignals}
+                    {t(locale, "measured")}: {report.measurableCount}/
+                    {report.totalSignals}
                   </span>
                 </div>
                 {report.earlyStopReason ? (
-                  <p className="mb-3 text-sm text-[var(--warn)]">
+                  <p className="mb-2 text-sm text-[var(--warn)]">
                     Early stop: {report.earlyStopReason}
                   </p>
                 ) : null}
-                <div className="grid gap-3 md:grid-cols-2">
+                <div>
                   {report.signals.map((s) => (
-                    <SignalCard key={s.signalKey} signal={s} locale={locale} />
+                    <SignalCard
+                      key={s.signalKey}
+                      signal={s}
+                      locale={locale}
+                    />
                   ))}
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
-            <div className="rounded-2xl border border-[var(--line)] p-5">
-              <h3 className="font-[family-name:var(--font-display)] text-xl font-semibold">
-                {t(locale, "nextSteps")}
-              </h3>
-              <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm text-[var(--muted)]">
+          <div className="mt-14 grid gap-10 border-t border-[var(--line)] pt-10 md:grid-cols-2">
+            <div>
+              <h3 className="display text-2xl">{t(locale, "nextSteps")}</h3>
+              <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm leading-relaxed text-[var(--mute)]">
                 <li>{t(locale, "next1")}</li>
                 <li>{t(locale, "next2")}</li>
                 <li>{t(locale, "next3")}</li>
               </ol>
               <a
                 href="/check/x"
-                className="mt-4 inline-flex text-sm text-[var(--signal)] hover:underline"
+                className="mt-5 inline-flex text-sm font-medium text-[var(--signal)] hover:underline"
               >
                 {t(locale, "officialCta")} →
               </a>
