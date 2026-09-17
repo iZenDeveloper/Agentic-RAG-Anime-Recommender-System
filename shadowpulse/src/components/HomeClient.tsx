@@ -1,17 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ScanExperience } from "@/components/ScanExperience";
-import type { Locale } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 import type { Platform } from "@/lib/types";
 
 const ALL: Platform[] = ["x", "instagram", "tiktok", "facebook", "threads"];
+const locale = "en" as const;
 
 export function HomeClient() {
-  const [locale, setLocale] = useState<Locale>("vi");
   const search = useSearchParams();
 
   const preset = useMemo(() => {
@@ -31,7 +30,7 @@ export function HomeClient() {
 
   return (
     <>
-      <SiteHeader locale={locale} onLocale={setLocale} />
+      <SiteHeader locale={locale} />
       <main className="mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-5xl flex-col px-5 pb-20 pt-4">
         <section className="relative mb-16 pt-8 sm:pt-14">
           <p className="enter display text-[clamp(3.2rem,12vw,7.5rem)] leading-[0.92] text-[var(--ink)]">

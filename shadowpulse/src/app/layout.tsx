@@ -10,7 +10,7 @@ const display = Fraunces({
 });
 
 const body = Source_Sans_3({
-  subsets: ["latin", "latin-ext", "vietnamese"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-body",
   weight: ["400", "500", "600", "700"],
 });
@@ -22,9 +22,9 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ShadowPulse — kiểm tra tín hiệu hạn chế hiển thị",
+  title: "ShadowPulse — visibility & shadowban signal scanner",
   description:
-    "Quét tín hiệu visibility công khai trên X, Instagram, TikTok, Facebook và Threads. Có confidence. Không verdict bịa.",
+    "Scan public visibility signals across X, Instagram, TikTok, Facebook, and Threads. Confidence included. No fake verdicts.",
   robots: { index: true, follow: true },
 };
 
@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
+    <html lang="en">
       <body
         className={`${display.variable} ${body.variable} ${mono.variable} antialiased`}
       >

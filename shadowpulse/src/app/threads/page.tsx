@@ -4,8 +4,8 @@ export default function ThLanding() {
   return (
     <PlatformLanding
       platform="threads"
-      title="Check visibility Threads"
-      blurb="Profile public + search nếu surface còn sống. Reply visibility thuộc V1 khi có permalink."
+      title="Check Threads visibility"
+      blurb="Public profile + search when the surface is alive. Reply visibility comes in V1 when a permalink is available."
     />
   );
 }

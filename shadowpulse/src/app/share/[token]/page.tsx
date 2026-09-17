@@ -5,13 +5,13 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ScoreRing, SignalCard } from "@/components/SignalCard";
-import type { Locale } from "@/lib/i18n";
 import { PLATFORM_LABEL, t } from "@/lib/i18n";
 import type { ScanJob } from "@/lib/types";
 
+const locale = "en" as const;
+
 export default function SharePage() {
   const params = useParams<{ token: string }>();
-  const [locale, setLocale] = useState<Locale>("vi");
   const [job, setJob] = useState<ScanJob | null>(null);
   const [error, setError] = useState(false);
 
@@ -28,20 +28,18 @@ export default function SharePage() {
 
   return (
     <>
-      <SiteHeader locale={locale} onLocale={setLocale} />
+      <SiteHeader locale={locale} />
       <main className="mx-auto max-w-5xl px-5 py-10">
         {error ? (
-          <p className="text-[var(--danger)]">
-            Link hết hạn hoặc không tồn tại (TTL 24h, noindex).
-          </p>
+          <p className="text-[var(--danger)]">{t(locale, "shareExpired")}</p>
         ) : null}
         {!job && !error ? (
-          <p className="text-[var(--mute)]">Loading…</p>
+          <p className="text-[var(--mute)]">{t(locale, "loading")}</p>
         ) : null}
         {job ? (
           <>
             <p className="text-sm text-[var(--mute)]">
-              {t(locale, "resultFor")}
+              {t(locale, "sharedReport")}
             </p>
             <h1 className="display text-3xl text-[var(--ink)] sm:text-4xl">
               @{job.handleNorm}
@@ -53,7 +51,7 @@ export default function SharePage() {
               {job.reports.map((report) => (
                 <div key={report.platform}>
                   <h2 className="display mb-2 text-2xl">
-                    {PLATFORM_LABEL[report.platform][locale]}
+                    {PLATFORM_LABEL[report.platform]}
                   </h2>
                   <ScoreRing
                     score={report.visibilityScore}
@@ -77,7 +75,7 @@ export default function SharePage() {
               href="/"
               className="mt-12 inline-flex text-sm font-medium text-[var(--signal)] hover:underline"
             >
-              Quét handle khác →
+              {t(locale, "scanAnother")}
             </Link>
           </>
         ) : null}

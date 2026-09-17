@@ -1,48 +1,6 @@
-export type Locale = "vi" | "en";
+export type Locale = "en";
 
 const dict = {
-  vi: {
-    brand: "ShadowPulse",
-    tagline: "Biết nền tảng đang giấu gì, và mức độ chắc chắn của kết luận đó.",
-    heroSupport:
-      "Quét tín hiệu hạn chế hiển thị công khai trên X, Instagram, TikTok, Facebook và Threads. Không mật khẩu. Không verdict bịa.",
-    cta: "Quét ngay",
-    placeholder: "@handle hoặc URL profile",
-    platforms: "Nền tảng",
-    scanning: "Đang quét tín hiệu công khai…",
-    score: "Visibility Score",
-    scoreBasedOn: "Điểm dựa trên {n}/{m} tín hiệu đo được",
-    scoreNone: "Chưa đủ tín hiệu đo được để tính điểm",
-    disclaimer:
-      "ShadowPulse quan sát dữ liệu công khai. Đây không phải thông báo từ X, Meta hay TikTok. Điểm số bỏ qua các tín hiệu không đo được. Hãy đối chiếu Account Status / Under the Hood trong app.",
-    nextSteps: "3 việc nên làm tiếp",
-    next1: "Mở công cụ official trong app (Account Status / Under the Hood).",
-    next2: "Nếu Inconclusive vì thiếu bài/reply: đăng 1 bài test công khai rồi quét lại.",
-    next3: "Đừng đổi strategy chỉ vì tụt view. Tụt view không đồng nghĩa shadowban.",
-    alertTitle: "Nhận alert khi tín hiệu đổi",
-    alertPlaceholder: "email@domain.com",
-    alertCta: "Giữ chỗ monitor",
-    alertThanks: "Đã lưu. Phase 2 sẽ gửi magic link monitor.",
-    methodology: "Phương pháp",
-    manualCheck: "Check tay 2 phút",
-    share: "Chia sẻ kết quả (24h)",
-    openManual: "Mở link kiểm tra tay",
-    statusClear: "Clear",
-    statusRestricted: "Restricted",
-    statusInconclusive: "Inconclusive",
-    statusNA: "N/A",
-    confidence: "Tin cậy",
-    evidence: "Bằng chứng",
-    method: "Cách đo",
-    rateLimit: "Bạn đã hết lượt free hôm nay hoặc handle vừa được quét. Thử lại sau.",
-    invalid: "Handle không hợp lệ cho nền tảng đã chọn.",
-    empty: "Nhập handle và chọn ít nhất một nền tảng.",
-    footerTrust: "Trung thực hơn đối thủ. “Không rõ” tốt hơn “bị ban 100%”.",
-    navMethod: "Phương pháp",
-    resultFor: "Báo cáo cho",
-    measured: "Đo được",
-    officialCta: "Mở hướng dẫn check official",
-  },
   en: {
     brand: "ShadowPulse",
     tagline: "See what platforms are hiding, and how sure we are.",
@@ -59,8 +17,10 @@ const dict = {
       "ShadowPulse observes public data only. This is not a notice from X, Meta, or TikTok. Scores ignore unmeasurable signals. Cross-check Account Status / Under the Hood in-app.",
     nextSteps: "3 things to do next",
     next1: "Open the official tool in-app (Account Status / Under the Hood).",
-    next2: "If Inconclusive for missing posts/replies: publish one public test, then rescan.",
-    next3: "Don’t overhaul strategy for a view drop alone. Views are not a shadowban.",
+    next2:
+      "If Inconclusive for missing posts/replies: publish one public test, then rescan.",
+    next3:
+      "Don’t overhaul strategy for a view drop alone. Views are not a shadowban.",
     alertTitle: "Get alerted when signals change",
     alertPlaceholder: "email@domain.com",
     alertCta: "Join monitor waitlist",
@@ -84,10 +44,18 @@ const dict = {
     resultFor: "Report for",
     measured: "Measurable",
     officialCta: "Open official check guide",
+    scanFailed: "Scan failed. Try again.",
+    networkError: "Network error.",
+    shareExpired: "Link expired or not found (24h TTL, noindex).",
+    loading: "Loading…",
+    sharedReport: "Shared report",
+    scanAnother: "Scan another handle →",
+    readMethod: "Read the methodology",
+    copied: "Copied",
   },
 } as const;
 
-export type DictKey = keyof (typeof dict)["vi"];
+export type DictKey = keyof (typeof dict)["en"];
 
 export function t(
   locale: Locale,
@@ -105,11 +73,11 @@ export function t(
 
 export const PLATFORM_LABEL: Record<
   "x" | "instagram" | "tiktok" | "facebook" | "threads",
-  { vi: string; en: string }
+  string
 > = {
-  x: { vi: "X", en: "X" },
-  instagram: { vi: "Instagram", en: "Instagram" },
-  tiktok: { vi: "TikTok", en: "TikTok" },
-  facebook: { vi: "Facebook", en: "Facebook" },
-  threads: { vi: "Threads", en: "Threads" },
+  x: "X",
+  instagram: "Instagram",
+  tiktok: "TikTok",
+  facebook: "Facebook",
+  threads: "Threads",
 };

@@ -1,12 +1,13 @@
 # ShadowPulse
 
-Web app quét tín hiệu hạn chế hiển thị (shadowban / reach suppression) đa nền tảng:
+Web app that scans public visibility / shadowban signals across
 **X · Instagram · TikTok · Facebook · Threads**.
 
-Theo PRD v0.1: trung thực hơn đối thủ — mỗi tín hiệu có status
-`Clear / Restricted / Inconclusive / N/A`, confidence, evidence và CTA check official.
+Aligned with PRD v0.1: every signal returns
+`Clear / Restricted / Inconclusive / N/A`, plus confidence, evidence, and an
+official-check CTA.
 
-## Chạy local
+## Run locally
 
 ```bash
 cd shadowpulse
@@ -14,7 +15,7 @@ npm install
 npm run dev
 ```
 
-Mở [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000).
 
 ## API
 
@@ -24,10 +25,10 @@ Mở [http://localhost:3000](http://localhost:3000).
 { "handle": "elonmusk", "platforms": ["x", "instagram"] }
 ```
 
-Rate limit free: 5 check/IP/ngày, 1 check/handle/3 phút.
+Free rate limit: 5 checks/IP/day, 1 check/handle/3 minutes.
 
-## Nguyên tắc
+## Principles
 
-- Chỉ probe dữ liệu công khai, không OAuth mật khẩu user.
-- Không đo được → **Inconclusive**, không bịa Restricted.
-- Visibility Score chỉ trên tín hiệu đo được.
+- Probe public data only — no user password OAuth.
+- If it cannot be measured → **Inconclusive**, never invent Restricted.
+- Visibility Score uses measurable signals only.

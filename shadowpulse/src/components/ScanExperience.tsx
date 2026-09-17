@@ -62,14 +62,12 @@ export function ScanExperience({
           return;
         }
         if (!res.ok || !data.job) {
-          setError(
-            locale === "vi" ? "Quét thất bại. Thử lại." : "Scan failed. Try again.",
-          );
+          setError(t(locale, "scanFailed"));
           return;
         }
         setJob(data.job as ScanJob);
       } catch {
-        setError(locale === "vi" ? "Lỗi mạng." : "Network error.");
+        setError(t(locale, "networkError"));
       }
     });
   }
@@ -124,7 +122,7 @@ export function ScanExperience({
               className="platform-toggle"
               aria-pressed={platforms.includes(p)}
             >
-              {PLATFORM_LABEL[p][locale]}
+              {PLATFORM_LABEL[p]}
             </button>
           ))}
         </div>
@@ -182,7 +180,7 @@ export function ScanExperience({
               onClick={share}
               className="border-b border-[var(--line-strong)] pb-0.5 text-sm text-[var(--mute)] hover:text-[var(--ink)]"
             >
-              {copied ? "Copied" : t(locale, "share")}
+              {copied ? t(locale, "copied") : t(locale, "share")}
             </button>
           </div>
 
@@ -205,7 +203,7 @@ export function ScanExperience({
                     className="display text-2xl"
                     style={{ color: PLATFORM_ACCENT[report.platform] }}
                   >
-                    {PLATFORM_LABEL[report.platform][locale]}
+                    {PLATFORM_LABEL[report.platform]}
                   </h3>
                   <span className="mono text-xs text-[var(--mute)]">
                     {t(locale, "score")}:{" "}

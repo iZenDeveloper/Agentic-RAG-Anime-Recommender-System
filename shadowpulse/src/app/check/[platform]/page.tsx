@@ -6,52 +6,52 @@ const GUIDES: Record<
   { title: string; steps: string[]; official: string }
 > = {
   x: {
-    title: "Check tay X trong 2 phút",
+    title: "Manual X check in 2 minutes",
     steps: [
-      "Mở x.com bằng tài khoản khác (hoặc logged-out).",
-      "Gõ vài ký tự đầu handle vào Search → People: có hiện suggestion không?",
-      "Search `from:handle` tab Latest: bài gần nhất có index không?",
-      "Mở Under the Hood / account notice trong app nếu có.",
+      "Open x.com in another account (or logged out).",
+      "Type the first few characters of the handle in Search → People: does a suggestion appear?",
+      "Search `from:handle` on the Latest tab: is the newest post indexed?",
+      "Open Under the Hood / account notices in the app if available.",
     ],
     official: "https://help.x.com/en/using-x/x-under-the-hood",
   },
   instagram: {
-    title: "Check tay Instagram trong 2 phút",
+    title: "Manual Instagram check in 2 minutes",
     steps: [
-      "Settings → Account Status trong app (source of truth).",
-      "Từ nick không follow: search username — profile có hiện không?",
-      "Đăng hashtag độc, search hashtag từ nick khác.",
-      "Đừng kết luận Explore ban chỉ vì view tụt.",
+      "Open Settings → Account Status in the app (source of truth).",
+      "From a non-follower account: search the username — does the profile appear?",
+      "Post a unique hashtag, then search that hashtag from another account.",
+      "Don’t call an Explore ban just because views dropped.",
     ],
     official: "https://help.instagram.com/2635538616697496",
   },
   tiktok: {
-    title: "Check tay TikTok trong 2 phút",
+    title: "Manual TikTok check in 2 minutes",
     steps: [
-      "TikTok Studio → Account Check / Account status.",
-      "Mở video mới → Analytics → Traffic source (For You?).",
-      "Search handle từ nick không follow.",
-      "Hashtag độc + nick không follow để test discovery.",
+      "Open TikTok Studio → Account Check / Account status.",
+      "Open a new video → Analytics → Traffic source (For You?).",
+      "Search the handle from a non-follower account.",
+      "Use a unique hashtag + non-follower search to test discovery.",
     ],
     official: "https://www.tiktok.com/tiktokstudio",
   },
   facebook: {
-    title: "Check tay Facebook trong 2 phút",
+    title: "Manual Facebook check in 2 minutes",
     steps: [
-      "Mở Account Status / Professional dashboard trong app.",
-      "Search Page từ tài khoản khác.",
-      "Kiểm tra Page quality / ad account riêng nếu chạy ads.",
-      "Tool bên ngoài không đọc được phân phối newsfeed.",
+      "Open Account Status / Professional dashboard in the app.",
+      "Search the Page from another account.",
+      "Check Page quality / ad account separately if you run ads.",
+      "External tools cannot read newsfeed distribution.",
     ],
     official: "https://www.facebook.com/help",
   },
   threads: {
-    title: "Check tay Threads trong 2 phút",
+    title: "Manual Threads check in 2 minutes",
     steps: [
-      "Mở profile logged-out / nick khác.",
-      "Search handle nếu surface còn sống.",
-      "Kiểm tra reply trong thread gốc từ phía người lạ.",
-      "Đối chiếu Account Status Instagram (cùng hệ Meta).",
+      "Open the profile logged out / from another account.",
+      "Search the handle if the surface is still alive.",
+      "Check a reply inside the parent thread from a stranger’s view.",
+      "Cross-check Instagram Account Status (same Meta system).",
     ],
     official: "https://www.threads.net/",
   },
@@ -76,13 +76,11 @@ export default async function CheckGuidePage({
 
   return (
     <main className="mx-auto max-w-2xl px-5 py-12">
-      <Link href="/" className="text-sm text-[var(--signal)]">
+      <Link href="/" className="text-sm text-[var(--signal)] hover:underline">
         ← ShadowPulse
       </Link>
-      <h1 className="mt-6 font-[family-name:var(--font-display)] text-3xl font-bold">
-        {guide.title}
-      </h1>
-      <ol className="mt-6 list-decimal space-y-3 pl-5 text-[var(--muted)]">
+      <h1 className="display mt-6 text-3xl text-[var(--ink)]">{guide.title}</h1>
+      <ol className="mt-6 list-decimal space-y-3 pl-5 text-[var(--mute)]">
         {guide.steps.map((s) => (
           <li key={s}>{s}</li>
         ))}
@@ -91,9 +89,9 @@ export default async function CheckGuidePage({
         href={guide.official}
         target="_blank"
         rel="noreferrer"
-        className="mt-8 inline-flex rounded-xl bg-[var(--signal)] px-4 py-2.5 text-sm font-semibold text-[#04201b]"
+        className="btn-primary mt-8 inline-flex px-4 py-2.5 text-sm font-semibold"
       >
-        Mở hướng dẫn official
+        Open official guide
       </a>
     </main>
   );

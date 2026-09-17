@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { ScanExperience } from "@/components/ScanExperience";
 import { SiteHeader } from "@/components/SiteHeader";
-import type { Locale } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
 import type { Platform } from "@/lib/types";
+
+const locale = "en" as const;
 
 export function PlatformLanding({
   platform,
@@ -16,10 +17,9 @@ export function PlatformLanding({
   title: string;
   blurb: string;
 }) {
-  const [locale, setLocale] = useState<Locale>("vi");
   return (
     <>
-      <SiteHeader locale={locale} onLocale={setLocale} />
+      <SiteHeader locale={locale} />
       <main className="mx-auto max-w-5xl px-5 pb-20 pt-8">
         <h1 className="display text-[clamp(2.2rem,6vw,3.8rem)] leading-[1.05] text-[var(--ink)]">
           {title}
@@ -35,14 +35,14 @@ export function PlatformLanding({
             href="/methodology"
             className="text-[var(--signal)] hover:underline"
           >
-            Đọc phương pháp đo
+            {t(locale, "readMethod")}
           </Link>
           {" · "}
           <Link
             href={`/check/${platform}`}
             className="text-[var(--signal)] hover:underline"
           >
-            Check tay 2 phút
+            {t(locale, "manualCheck")}
           </Link>
         </p>
       </main>

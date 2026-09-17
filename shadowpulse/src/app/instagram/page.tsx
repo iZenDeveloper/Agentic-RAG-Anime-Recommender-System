@@ -4,8 +4,8 @@ export default function IgLanding() {
   return (
     <PlatformLanding
       platform="instagram"
-      title="Check hạn chế Instagram"
-      blurb="Profile + search visibility (khi đo được) + hướng dẫn Account Status. Không bịa Explore/recommendation ban."
+      title="Check Instagram visibility limits"
+      blurb="Profile + search visibility when measurable, plus Account Status guidance. No fabricated Explore/recommendation bans."
     />
   );
 }
