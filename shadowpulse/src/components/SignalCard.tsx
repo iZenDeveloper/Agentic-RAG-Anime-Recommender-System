@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type { Platform, SignalResult, SignalStatus } from "@/lib/types";
 import type { Locale } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
@@ -80,8 +79,6 @@ export function SignalCard({
   signal: SignalResult;
   locale: Locale;
 }) {
-  const [open, setOpen] = useState(false);
-
   return (
     <li className={`checklist-item ${STATUS_CLASS[signal.status]}`}>
       <div className="checklist-main">
@@ -97,26 +94,7 @@ export function SignalCard({
               {t(locale, STATUS_KEY[signal.status])}
             </span>
           </div>
-        </div>
-        <button
-          type="button"
-          className="checklist-toggle"
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-        >
-          {open ? t(locale, "hideDetails") : t(locale, "showDetails")}
-        </button>
-      </div>
-      {open ? (
-        <div className="checklist-detail">
-          <p className="mono text-[11px] text-[var(--mute)]">
-            {t(locale, "confidence")}: {signal.confidence}
-          </p>
-          <p className="mt-2 text-sm text-[var(--mute)]">
-            <span className="text-[var(--ink)]">{t(locale, "method")}: </span>
-            {signal.evidence.method}
-          </p>
-          <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-[var(--ink)]">
+          <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-[var(--mute)]">
             {signal.evidence.observed}
           </p>
           {signal.evidence.manualUrl ? (
@@ -124,13 +102,13 @@ export function SignalCard({
               href={signal.evidence.manualUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 inline-flex text-sm font-medium text-[var(--signal)] underline-offset-4 hover:underline"
+              className="mt-2 inline-flex text-sm font-medium text-[var(--signal)] underline-offset-4 hover:underline"
             >
               {t(locale, "openManual")} →
             </a>
           ) : null}
         </div>
-      ) : null}
+      </div>
     </li>
   );
 }

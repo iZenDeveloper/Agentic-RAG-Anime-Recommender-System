@@ -22,8 +22,6 @@ const dict = {
     verdictUnclearHint:
       "Not enough public data to say banned or not. Check the list below.",
     checklistTitle: "What we checked",
-    showDetails: "Details",
-    hideDetails: "Hide details",
     disclaimer:
       "Public data only — not an official notice from X, Meta, or TikTok. “Can't tell” means we couldn't measure that signal. Cross-check Account Status / Under the Hood in-app.",
     nextSteps: "3 things to do next",
