@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import type { Platform, SignalResult, SignalStatus } from "@/lib/types";
 import type { Locale } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
+import type { Verdict } from "@/lib/verdict";
 
 const STATUS_KEY: Record<
   SignalStatus,
@@ -14,12 +16,62 @@ const STATUS_KEY: Record<
   not_applicable: "statusNA",
 };
 
-const STATUS_CLASS: Record<SignalStatus, string> = {
-  clear: "badge-clear",
-  restricted: "badge-restricted",
-  inconclusive: "badge-inconclusive",
-  not_applicable: "badge-na",
+const STATUS_MARK: Record<SignalStatus, string> = {
+  clear: "✓",
+  restricted: "✗",
+  inconclusive: "?",
+  not_applicable: "—",
 };
+
+const STATUS_CLASS: Record<SignalStatus, string> = {
+  clear: "check-ok",
+  restricted: "check-ban",
+  inconclusive: "check-unknown",
+  not_applicable: "check-na",
+};
+
+const VERDICT_KEY: Record<
+  Verdict,
+  "verdictNotBanned" | "verdictRestricted" | "verdictUnclear"
+> = {
+  not_banned: "verdictNotBanned",
+  restricted: "verdictRestricted",
+  unclear: "verdictUnclear",
+};
+
+const VERDICT_HINT: Record<
+  Verdict,
+  "verdictNotBannedHint" | "verdictRestrictedHint" | "verdictUnclearHint"
+> = {
+  not_banned: "verdictNotBannedHint",
+  restricted: "verdictRestrictedHint",
+  unclear: "verdictUnclearHint",
+};
+
+const VERDICT_CLASS: Record<Verdict, string> = {
+  not_banned: "verdict-ok",
+  restricted: "verdict-ban",
+  unclear: "verdict-unknown",
+};
+
+export function VerdictBanner({
+  verdict,
+  locale,
+}: {
+  verdict: Verdict;
+  locale: Locale;
+}) {
+  return (
+    <div className={`verdict-banner ${VERDICT_CLASS[verdict]}`}>
+      <p className="display text-[2.75rem] leading-none tracking-[-0.03em] sm:text-[3.5rem]">
+        {t(locale, VERDICT_KEY[verdict])}
+      </p>
+      <p className="mt-3 max-w-xl text-sm leading-relaxed opacity-90">
+        {t(locale, VERDICT_HINT[verdict])}
+      </p>
+    </div>
+  );
+}
 
 export function SignalCard({
   signal,
@@ -28,73 +80,58 @@ export function SignalCard({
   signal: SignalResult;
   locale: Locale;
 }) {
-  return (
-    <article className="signal-row">
-      <div className="pt-0.5">
-        <span className={`badge ${STATUS_CLASS[signal.status]}`}>
-          {t(locale, STATUS_KEY[signal.status])}
-        </span>
-        <p className="mono mt-2 text-[11px] text-[var(--mute)]">
-          {t(locale, "confidence")}: {signal.confidence}
-        </p>
-      </div>
-      <div>
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h3 className="text-[1.05rem] font-semibold tracking-[-0.015em]">
-            {signal.label}
-          </h3>
-          <span className="mono text-[10px] text-[var(--mute)]">
-            {signal.signalKey}
-          </span>
-        </div>
-        <p className="mt-2 text-sm text-[var(--mute)]">
-          <span className="text-[var(--ink)]">{t(locale, "method")}: </span>
-          {signal.evidence.method}
-        </p>
-        <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-[var(--ink)]">
-          {signal.evidence.observed}
-        </p>
-        {signal.evidence.manualUrl ? (
-          <a
-            href={signal.evidence.manualUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-3 inline-flex text-sm font-medium text-[var(--signal)] underline-offset-4 hover:underline"
-          >
-            {t(locale, "openManual")} →
-          </a>
-        ) : null}
-      </div>
-    </article>
-  );
-}
+  const [open, setOpen] = useState(false);
 
-export function ScoreRing({
-  score,
-  measurable,
-  total,
-  locale,
-}: {
-  score: number | null;
-  measurable: number;
-  total: number;
-  locale: Locale;
-}) {
   return (
-    <div className="flex flex-col gap-2 border-y border-[var(--line)] py-6 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
-      <div>
-        <p className="text-sm text-[var(--mute)]">{t(locale, "score")}</p>
-        <p className="display mono mt-1 text-[4.5rem] leading-none tracking-[-0.04em] text-[var(--ink)]">
-          {score == null ? "—" : score}
-          <span className="ml-2 text-2xl text-[var(--mute)]">/100</span>
-        </p>
+    <li className={`checklist-item ${STATUS_CLASS[signal.status]}`}>
+      <div className="checklist-main">
+        <span className="checklist-mark" aria-hidden>
+          {STATUS_MARK[signal.status]}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <p className="text-[1.02rem] font-semibold tracking-[-0.01em] text-[var(--ink)]">
+              {signal.label}
+            </p>
+            <span className="mono text-[11px] uppercase tracking-wide text-[var(--mute)]">
+              {t(locale, STATUS_KEY[signal.status])}
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          className="checklist-toggle"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+        >
+          {open ? t(locale, "hideDetails") : t(locale, "showDetails")}
+        </button>
       </div>
-      <p className="max-w-sm pb-1 text-sm leading-relaxed text-[var(--mute)]">
-        {score == null
-          ? t(locale, "scoreNone")
-          : t(locale, "scoreBasedOn", { n: measurable, m: total })}
-      </p>
-    </div>
+      {open ? (
+        <div className="checklist-detail">
+          <p className="mono text-[11px] text-[var(--mute)]">
+            {t(locale, "confidence")}: {signal.confidence}
+          </p>
+          <p className="mt-2 text-sm text-[var(--mute)]">
+            <span className="text-[var(--ink)]">{t(locale, "method")}: </span>
+            {signal.evidence.method}
+          </p>
+          <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-[var(--ink)]">
+            {signal.evidence.observed}
+          </p>
+          {signal.evidence.manualUrl ? (
+            <a
+              href={signal.evidence.manualUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-flex text-sm font-medium text-[var(--signal)] underline-offset-4 hover:underline"
+            >
+              {t(locale, "openManual")} →
+            </a>
+          ) : null}
+        </div>
+      ) : null}
+    </li>
   );
 }
 

@@ -244,3 +244,125 @@ a {
     grid-template-columns: 7.5rem 1fr;
   }
 }
+
+.verdict-banner {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 1.5rem 0;
+}
+
+.verdict-ok {
+  color: var(--signal);
+}
+
+.verdict-ban {
+  color: var(--danger);
+}
+
+.verdict-unknown {
+  color: var(--warn);
+}
+
+.verdict-chip {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--line-strong);
+}
+
+.verdict-chip-ok {
+  color: var(--signal);
+  border-color: var(--signal);
+  background: var(--signal-soft);
+}
+
+.verdict-chip-ban {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.verdict-chip-unknown {
+  color: var(--warn);
+  border-color: var(--warn);
+  background: var(--warn-soft);
+}
+
+.checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.checklist-item {
+  border-bottom: 1px solid var(--line);
+  padding: 0.85rem 0;
+}
+
+.checklist-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.checklist-mark {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: 1px solid var(--line-strong);
+  line-height: 1;
+  margin-top: 0.1rem;
+}
+
+.check-ok .checklist-mark {
+  color: var(--signal);
+  border-color: var(--signal);
+  background: var(--signal-soft);
+}
+
+.check-ban .checklist-mark {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.check-unknown .checklist-mark {
+  color: var(--warn);
+  border-color: var(--warn);
+  background: var(--warn-soft);
+}
+
+.check-na .checklist-mark {
+  color: var(--mute);
+}
+
+.checklist-toggle {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: var(--mute);
+  font-size: 0.75rem;
+  padding: 0.15rem 0;
+  border-bottom: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.checklist-toggle:hover {
+  color: var(--ink);
+  border-bottom-color: var(--line-strong);
+}
+
+.checklist-detail {
+  margin-top: 0.65rem;
+  margin-left: 2.25rem;
+  padding-top: 0.35rem;
+}

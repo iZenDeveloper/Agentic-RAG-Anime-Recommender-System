@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
-import { ScoreRing, SignalCard } from "@/components/SignalCard";
+import { SignalCard, VerdictBanner } from "@/components/SignalCard";
 import { PLATFORM_LABEL, t } from "@/lib/i18n";
 import type { ScanJob } from "@/lib/types";
+import { computeVerdict } from "@/lib/verdict";
 
 const locale = "en" as const;
 
@@ -26,6 +27,10 @@ export default function SharePage() {
       .catch(() => setError(true));
   }, [params.token]);
 
+  const overall = job
+    ? computeVerdict(job.reports.flatMap((r) => r.signals))
+    : null;
+
   return (
     <>
       <SiteHeader locale={locale} />
@@ -36,7 +41,7 @@ export default function SharePage() {
         {!job && !error ? (
           <p className="text-[var(--mute)]">{t(locale, "loading")}</p>
         ) : null}
-        {job ? (
+        {job && overall ? (
           <>
             <p className="text-sm text-[var(--mute)]">
               {t(locale, "sharedReport")}
@@ -44,32 +49,52 @@ export default function SharePage() {
             <h1 className="display text-3xl text-[var(--ink)] sm:text-4xl">
               @{job.handleNorm}
             </h1>
+            <div className="mt-6">
+              <VerdictBanner verdict={overall} locale={locale} />
+            </div>
             <p className="mt-6 max-w-3xl border-l-2 border-[var(--warn)] pl-4 text-sm leading-relaxed text-[var(--warn)]">
               {t(locale, "disclaimer")}
             </p>
             <div className="mt-10 space-y-12">
-              {job.reports.map((report) => (
-                <div key={report.platform}>
-                  <h2 className="display mb-2 text-2xl">
-                    {PLATFORM_LABEL[report.platform]}
-                  </h2>
-                  <ScoreRing
-                    score={report.visibilityScore}
-                    measurable={report.measurableCount}
-                    total={report.totalSignals}
-                    locale={locale}
-                  />
-                  <div className="mt-2">
-                    {report.signals.map((s) => (
-                      <SignalCard
-                        key={s.signalKey}
-                        signal={s}
-                        locale={locale}
-                      />
-                    ))}
+              {job.reports.map((report) => {
+                const platformVerdict = computeVerdict(report.signals);
+                return (
+                  <div key={report.platform}>
+                    <div className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                      <h2 className="display text-2xl">
+                        {PLATFORM_LABEL[report.platform]}
+                      </h2>
+                      <span
+                        className={`verdict-chip ${
+                          platformVerdict === "not_banned"
+                            ? "verdict-chip-ok"
+                            : platformVerdict === "restricted"
+                              ? "verdict-chip-ban"
+                              : "verdict-chip-unknown"
+                        }`}
+                      >
+                        {platformVerdict === "not_banned"
+                          ? t(locale, "verdictNotBanned")
+                          : platformVerdict === "restricted"
+                            ? t(locale, "verdictRestricted")
+                            : t(locale, "verdictUnclear")}
+                      </span>
+                    </div>
+                    <p className="mb-2 text-sm text-[var(--mute)]">
+                      {t(locale, "checklistTitle")}
+                    </p>
+                    <ul className="checklist">
+                      {report.signals.map((s) => (
+                        <SignalCard
+                          key={s.signalKey}
+                          signal={s}
+                          locale={locale}
+                        />
+                      ))}
+                    </ul>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <Link
               href="/"

@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import type { Locale } from "@/lib/i18n";
 import { PLATFORM_LABEL, t } from "@/lib/i18n";
 import type { Platform, ScanJob } from "@/lib/types";
+import { computeVerdict } from "@/lib/verdict";
 import { AlertCapture } from "./AlertCapture";
-import { PLATFORM_ACCENT, ScoreRing, SignalCard } from "./SignalCard";
+import { PLATFORM_ACCENT, SignalCard, VerdictBanner } from "./SignalCard";
 
 const ALL: Platform[] = ["x", "instagram", "tiktok", "facebook", "threads"];
 
@@ -84,21 +85,9 @@ export function ScanExperience({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const overall = useMemo(() => {
+  const overallVerdict = useMemo(() => {
     if (!job) return null;
-    const measurable = job.reports.reduce((a, r) => a + r.measurableCount, 0);
-    const clears = job.reports
-      .flatMap((r) => r.signals)
-      .filter((s) => s.status === "clear").length;
-    const restricted = job.reports
-      .flatMap((r) => r.signals)
-      .filter((s) => s.status === "restricted").length;
-    const denom = clears + restricted;
-    return {
-      score: denom === 0 ? null : Math.round((clears / denom) * 100),
-      measurable,
-      total: job.reports.reduce((a, r) => a + r.totalSignals, 0),
-    };
+    return computeVerdict(job.reports.flatMap((r) => r.signals));
   }, [job]);
 
   async function share() {
@@ -161,7 +150,7 @@ export function ScanExperience({
         ) : null}
       </form>
 
-      {job && overall ? (
+      {job && overallVerdict ? (
         <section className="mt-14 enter">
           <div className="mb-2 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -184,53 +173,60 @@ export function ScanExperience({
             </button>
           </div>
 
-          <ScoreRing
-            score={overall.score}
-            measurable={overall.measurable}
-            total={overall.total}
-            locale={locale}
-          />
+          <VerdictBanner verdict={overallVerdict} locale={locale} />
 
           <p className="mt-6 max-w-3xl border-l-2 border-[var(--warn)] pl-4 text-sm leading-relaxed text-[var(--warn)]">
             {t(locale, "disclaimer")}
           </p>
 
           <div className="mt-12 space-y-12">
-            {job.reports.map((report) => (
-              <div key={report.platform}>
-                <div className="mb-2 flex flex-wrap items-baseline gap-3">
-                  <h3
-                    className="display text-2xl"
-                    style={{ color: PLATFORM_ACCENT[report.platform] }}
-                  >
-                    {PLATFORM_LABEL[report.platform]}
-                  </h3>
-                  <span className="mono text-xs text-[var(--mute)]">
-                    {t(locale, "score")}:{" "}
-                    {report.visibilityScore == null
-                      ? "—"
-                      : report.visibilityScore}
-                    {" · "}
-                    {t(locale, "measured")}: {report.measurableCount}/
-                    {report.totalSignals}
-                  </span>
-                </div>
-                {report.earlyStopReason ? (
-                  <p className="mb-2 text-sm text-[var(--warn)]">
-                    Early stop: {report.earlyStopReason}
+            {job.reports.map((report) => {
+              const platformVerdict = computeVerdict(report.signals);
+              return (
+                <div key={report.platform}>
+                  <div className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                    <h3
+                      className="display text-2xl"
+                      style={{ color: PLATFORM_ACCENT[report.platform] }}
+                    >
+                      {PLATFORM_LABEL[report.platform]}
+                    </h3>
+                    <span
+                      className={`verdict-chip ${
+                        platformVerdict === "not_banned"
+                          ? "verdict-chip-ok"
+                          : platformVerdict === "restricted"
+                            ? "verdict-chip-ban"
+                            : "verdict-chip-unknown"
+                      }`}
+                    >
+                      {platformVerdict === "not_banned"
+                        ? t(locale, "verdictNotBanned")
+                        : platformVerdict === "restricted"
+                          ? t(locale, "verdictRestricted")
+                          : t(locale, "verdictUnclear")}
+                    </span>
+                  </div>
+                  {report.earlyStopReason ? (
+                    <p className="mb-3 text-sm text-[var(--warn)]">
+                      Early stop: {report.earlyStopReason}
+                    </p>
+                  ) : null}
+                  <p className="mb-2 text-sm text-[var(--mute)]">
+                    {t(locale, "checklistTitle")}
                   </p>
-                ) : null}
-                <div>
-                  {report.signals.map((s) => (
-                    <SignalCard
-                      key={s.signalKey}
-                      signal={s}
-                      locale={locale}
-                    />
-                  ))}
+                  <ul className="checklist">
+                    {report.signals.map((s) => (
+                      <SignalCard
+                        key={s.signalKey}
+                        signal={s}
+                        locale={locale}
+                      />
+                    ))}
+                  </ul>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="mt-14 grid gap-10 border-t border-[var(--line)] pt-10 md:grid-cols-2">
