@@ -3,6 +3,7 @@ export type Platform = "x" | "instagram" | "tiktok" | "facebook" | "threads";
 export type SignalStatus =
   | "clear"
   | "restricted"
+  | "not_found"
   | "inconclusive"
   | "not_applicable";
 

@@ -71,15 +71,15 @@ export const tiktokAdapter: PlatformAdapter = {
               ? "inconclusive"
               : "clear"
             : hardNotFound
-              ? "restricted"
+              ? "not_found"
               : "inconclusive",
           confidence: exists || hardNotFound ? "high" : "low",
           evidence: {
             method: "TikTok oEmbed + public profile HTML",
             observed: exists
-              ? `oEmbed author: ${oembed.data?.author_name ?? ctx.handle}`
+              ? `Profile exists — oEmbed author: ${oembed.data?.author_name ?? ctx.handle}`
               : hardNotFound
-                ? "oEmbed/profile returned not-found"
+                ? "Profile does not exist (oEmbed/profile not-found) — not a shadowban"
                 : `Could not confirm profile (oEmbed HTTP ${oembed.status}, HTML ${html.status})`,
             expected: "Public TikTok profile",
             manualUrl: url,

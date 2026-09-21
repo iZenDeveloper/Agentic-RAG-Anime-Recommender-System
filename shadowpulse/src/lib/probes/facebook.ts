@@ -38,7 +38,7 @@ export const facebookAdapter: PlatformAdapter = {
       account = {
         platform: "facebook",
         handle: ctx.handle,
-        exists: exists || (!notFound && loginWall),
+        exists,
       };
 
       const signals: SignalResult[] = [
@@ -47,19 +47,17 @@ export const facebookAdapter: PlatformAdapter = {
           signalKey: "fb.page_status",
           label: "Page / Profile status",
           status: notFound
-            ? "restricted"
+            ? "not_found"
             : exists
               ? "clear"
-              : loginWall
-                ? "inconclusive"
-                : "inconclusive",
+              : "inconclusive",
           confidence: notFound || exists ? "high" : "low",
           evidence: {
             method: "Public page/profile lookup",
             observed: notFound
-              ? "Page/profile not available"
+              ? "Page/profile does not exist or was removed — not a shadowban"
               : exists
-                ? "Public page reachable"
+                ? "Public page/profile exists and is reachable"
                 : loginWall
                   ? "Facebook returned a login wall — cannot confirm without session"
                   : `Lookup ambiguous (HTTP ${res.status})`,

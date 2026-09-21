@@ -6,7 +6,7 @@ import { PLATFORM_LABEL, t } from "@/lib/i18n";
 import type { Platform, ScanJob } from "@/lib/types";
 import { computeVerdict } from "@/lib/verdict";
 import { AlertCapture } from "./AlertCapture";
-import { PLATFORM_ACCENT, SignalCard, VerdictBanner } from "./SignalCard";
+import { PLATFORM_ACCENT, SignalCard, VerdictBanner, verdictChipClass, verdictLabel } from "./SignalCard";
 
 const ALL: Platform[] = ["x", "instagram", "tiktok", "facebook", "threads"];
 
@@ -191,20 +191,8 @@ export function ScanExperience({
                     >
                       {PLATFORM_LABEL[report.platform]}
                     </h3>
-                    <span
-                      className={`verdict-chip ${
-                        platformVerdict === "not_banned"
-                          ? "verdict-chip-ok"
-                          : platformVerdict === "restricted"
-                            ? "verdict-chip-ban"
-                            : "verdict-chip-unknown"
-                      }`}
-                    >
-                      {platformVerdict === "not_banned"
-                        ? t(locale, "verdictNotBanned")
-                        : platformVerdict === "restricted"
-                          ? t(locale, "verdictRestricted")
-                          : t(locale, "verdictUnclear")}
+                    <span className={`verdict-chip ${verdictChipClass(platformVerdict)}`}>
+                      {verdictLabel(platformVerdict, locale)}
                     </span>
                   </div>
                   {report.earlyStopReason ? (

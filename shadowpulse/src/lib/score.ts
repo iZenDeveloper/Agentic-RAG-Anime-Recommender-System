@@ -6,7 +6,9 @@ export function computeVisibilityScore(signals: SignalResult[]): {
   measurableCount: number;
   totalSignals: number;
 } {
-  const applicable = signals.filter((s) => s.status !== "not_applicable");
+  const applicable = signals.filter(
+    (s) => s.status !== "not_applicable" && s.status !== "not_found",
+  );
   const measurable = applicable.filter(
     (s) => s.status === "clear" || s.status === "restricted",
   );

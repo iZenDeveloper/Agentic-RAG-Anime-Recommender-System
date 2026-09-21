@@ -62,7 +62,7 @@ export const instagramAdapter: PlatformAdapter = {
           signalKey: "ig.account_status",
           label: "Profile status",
           status: hardNotFound
-            ? "restricted"
+            ? "not_found"
             : exists
               ? isPrivate
                 ? "inconclusive"
@@ -72,13 +72,13 @@ export const instagramAdapter: PlatformAdapter = {
           evidence: {
             method: "Public profile HTML",
             observed: hardNotFound
-              ? "Profile page not available"
+              ? "Profile does not exist or was removed (not the same as a shadowban)"
               : loginWall
                 ? "Instagram returned a login wall — public profile metadata unavailable to this probe"
                 : isPrivate
                   ? "Account appears private"
                   : exists
-                    ? "Public profile metadata reachable"
+                    ? "Public profile exists and metadata is reachable"
                     : `Lookup ambiguous (HTTP ${res.status})`,
             expected: "Public Instagram profile",
             manualUrl: url,

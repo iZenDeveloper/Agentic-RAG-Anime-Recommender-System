@@ -65,10 +65,19 @@ export async function fetchJson<T>(
   url: string,
   signal: AbortSignal,
   init?: RequestInit,
-): Promise<{ ok: boolean; status: number; data: T | null }> {
+): Promise<{
+  ok: boolean;
+  status: number;
+  data: T | null;
+  finalUrl: string;
+  redirectedOffHost: boolean;
+}> {
+  // Manual redirects: APIs like FxTwitter 302 missing users to GitHub.
+  // Following that would look like a false "200 OK" with no profile.
   const res = await fetch(url, {
     ...init,
     signal,
+    redirect: "manual",
     headers: {
       "User-Agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -77,12 +86,48 @@ export async function fetchJson<T>(
       ...(init?.headers ?? {}),
     },
   });
-  if (!res.ok) return { ok: false, status: res.status, data: null };
+
+  const location = res.headers.get("location") || "";
+  const redirectedOffHost =
+    res.status >= 300 &&
+    res.status < 400 &&
+    Boolean(location) &&
+    !sameApiHost(url, location);
+
+  // Opaque redirect / off-host bounce → treat as failed lookup, keep status.
+  if (redirectedOffHost) {
+    return {
+      ok: false,
+      status: res.status,
+      data: null,
+      finalUrl: location,
+      redirectedOffHost: true,
+    };
+  }
+
+  let data: T | null = null;
   try {
-    const data = (await res.json()) as T;
-    return { ok: true, status: res.status, data };
+    data = (await res.json()) as T;
   } catch {
-    return { ok: false, status: res.status, data: null };
+    data = null;
+  }
+
+  return {
+    ok: res.ok,
+    status: res.status,
+    data,
+    finalUrl: res.url || url,
+    redirectedOffHost: false,
+  };
+}
+
+function sameApiHost(requestUrl: string, location: string): boolean {
+  try {
+    const base = new URL(requestUrl);
+    const next = new URL(location, requestUrl);
+    return base.host === next.host;
+  } catch {
+    return false;
   }
 }
 

@@ -47,7 +47,7 @@ export const threadsAdapter: PlatformAdapter = {
           signalKey: "th.account_status",
           label: "Profile status",
           status: notFound
-            ? "restricted"
+            ? "not_found"
             : exists
               ? "clear"
               : "inconclusive",
@@ -55,9 +55,9 @@ export const threadsAdapter: PlatformAdapter = {
           evidence: {
             method: "Public Threads profile",
             observed: notFound
-              ? "Profile not found"
+              ? "Profile does not exist — not a shadowban"
               : exists
-                ? "Public profile reachable"
+                ? "Public profile exists and is reachable"
                 : `Lookup ambiguous (HTTP ${res.status})`,
             expected: "Public Threads profile",
             manualUrl: url,
@@ -103,7 +103,7 @@ export const threadsAdapter: PlatformAdapter = {
       return {
         account,
         signals,
-        earlyStopReason: !exists ? "account_not_found" : undefined,
+        earlyStopReason: notFound ? "account_not_found" : undefined,
       };
     } catch (err) {
       const ms = Date.now() - started;

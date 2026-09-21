@@ -15,15 +15,18 @@ const dict = {
     scoreNone: "Not enough measurable signals to score",
     verdictNotBanned: "Not banned",
     verdictRestricted: "Restricted",
+    verdictNotFound: "Not found",
     verdictUnclear: "Can't tell",
-    verdictNotBannedHint: "Public signals look normal from the outside.",
+    verdictNotBannedHint: "This account exists, and public signals look normal.",
     verdictRestrictedHint:
-      "At least one public signal looks limited or suppressed.",
+      "Account is suspended, or at least one public signal looks limited.",
+    verdictNotFoundHint:
+      "No matching public account — this is not a shadowban.",
     verdictUnclearHint:
-      "Not enough public data to say banned or not. Check the list below.",
+      "Not enough public data to say if the account exists, is suspended, or is restricted.",
     checklistTitle: "What we checked",
     disclaimer:
-      "Public data only — not an official notice from X, Meta, or TikTok. “Can't tell” means we couldn't measure that signal. Cross-check Account Status / Under the Hood in-app.",
+      "Public data only — not an official notice from X, Meta, or TikTok. “Not found” means the handle does not resolve. “Restricted” means suspension or a limited signal — not the same as missing. Cross-check Account Status / Under the Hood in-app.",
     nextSteps: "3 things to do next",
     next1: "Open the official tool in-app (Account Status / Under the Hood).",
     next2:
@@ -38,8 +41,9 @@ const dict = {
     manualCheck: "2-minute manual check",
     share: "Share result (24h)",
     openManual: "Open manual check link",
-    statusClear: "OK",
-    statusRestricted: "Banned",
+    statusClear: "Exists",
+    statusRestricted: "Suspended / limited",
+    statusNotFound: "Not found",
     statusInconclusive: "Can't tell",
     statusNA: "N/A",
     confidence: "Confidence",
@@ -48,7 +52,7 @@ const dict = {
     rateLimit: "Free daily limit or handle cooldown hit. Try again later.",
     invalid: "Handle is invalid for the selected platform(s).",
     empty: "Enter a handle and pick at least one platform.",
-    footerTrust: "Honesty over hype. “Can't tell” beats “100% banned”.",
+    footerTrust: "Honesty over hype. “Not found” is not “banned”.",
     navMethod: "Methodology",
     resultFor: "Result for",
     measured: "Measurable",

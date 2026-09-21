@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
-import { SignalCard, VerdictBanner } from "@/components/SignalCard";
+import { SignalCard, VerdictBanner, verdictChipClass, verdictLabel } from "@/components/SignalCard";
 import { PLATFORM_LABEL, t } from "@/lib/i18n";
 import type { ScanJob } from "@/lib/types";
 import { computeVerdict } from "@/lib/verdict";
@@ -64,20 +64,8 @@ export default function SharePage() {
                       <h2 className="display text-2xl">
                         {PLATFORM_LABEL[report.platform]}
                       </h2>
-                      <span
-                        className={`verdict-chip ${
-                          platformVerdict === "not_banned"
-                            ? "verdict-chip-ok"
-                            : platformVerdict === "restricted"
-                              ? "verdict-chip-ban"
-                              : "verdict-chip-unknown"
-                        }`}
-                      >
-                        {platformVerdict === "not_banned"
-                          ? t(locale, "verdictNotBanned")
-                          : platformVerdict === "restricted"
-                            ? t(locale, "verdictRestricted")
-                            : t(locale, "verdictUnclear")}
+                      <span className={`verdict-chip ${verdictChipClass(platformVerdict)}`}>
+                        {verdictLabel(platformVerdict, locale)}
                       </span>
                     </div>
                     <p className="mb-2 text-sm text-[var(--mute)]">

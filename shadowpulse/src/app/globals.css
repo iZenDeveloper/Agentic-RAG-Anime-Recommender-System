@@ -259,6 +259,10 @@ a {
   color: var(--danger);
 }
 
+.verdict-missing {
+  color: var(--ink);
+}
+
 .verdict-unknown {
   color: var(--warn);
 }
@@ -282,6 +286,12 @@ a {
   color: var(--danger);
   border-color: var(--danger);
   background: var(--danger-soft);
+}
+
+.verdict-chip-missing {
+  color: var(--ink);
+  border-color: var(--line-strong);
+  background: var(--paper-2);
 }
 
 .verdict-chip-unknown {
@@ -332,6 +342,12 @@ a {
   color: var(--danger);
   border-color: var(--danger);
   background: var(--danger-soft);
+}
+
+.check-missing .checklist-mark {
+  color: var(--ink);
+  border-color: var(--line-strong);
+  background: var(--paper-2);
 }
 
 .check-unknown .checklist-mark {

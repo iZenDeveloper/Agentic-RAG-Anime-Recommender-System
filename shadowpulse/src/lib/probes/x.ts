@@ -21,6 +21,7 @@ type SyndicationUser = {
 type FxTwitterUser = {
   code?: number;
   message?: string;
+  reason?: string;
   user?: {
     screen_name?: string;
     name?: string;
@@ -28,9 +29,12 @@ type FxTwitterUser = {
     possibly_sensitive?: boolean;
     media_count?: number;
     statuses_count?: number;
+    tweets?: number;
     description?: string;
   };
 };
+
+type AccountKind = "exists" | "not_found" | "suspended" | "inconclusive";
 
 async function lookupSyndication(handle: string, signal: AbortSignal) {
   return fetchJson<SyndicationUser[]>(
@@ -46,6 +50,104 @@ async function lookupFx(handle: string, signal: AbortSignal) {
   );
 }
 
+async function lookupProfileHtml(handle: string, signal: AbortSignal) {
+  return fetchText(profileUrl("x", handle), signal, {
+    headers: { Accept: "text/html" },
+  });
+}
+
+function classifyXAccount(input: {
+  syn: Awaited<ReturnType<typeof lookupSyndication>>;
+  fx: Awaited<ReturnType<typeof lookupFx>>;
+  html: Awaited<ReturnType<typeof lookupProfileHtml>>;
+  handle: string;
+}): {
+  kind: AccountKind;
+  synUser?: SyndicationUser;
+  fxUser?: FxTwitterUser["user"];
+  detail: string;
+} {
+  const synUser = input.syn.data?.[0];
+  const fxData = input.fx.data;
+  const fxUser = fxData?.user;
+  const fxMsg = `${fxData?.message || ""} ${fxData?.reason || ""}`.toLowerCase();
+
+  const fxExists = Boolean(fxUser?.screen_name);
+  const synExists = Boolean(synUser?.screen_name);
+
+  // Explicit suspension from Fx (body preserved even on HTTP 403).
+  const fxSuspended =
+    input.fx.status === 403 ||
+    fxData?.code === 403 ||
+    /suspend/.test(fxMsg);
+
+  // Explicit not-found from Fx: JSON 404, or 302 off-host (FxEmbed → GitHub).
+  const fxNotFound =
+    input.fx.status === 404 ||
+    fxData?.code === 404 ||
+    /not found|does not exist|user not found/.test(fxMsg) ||
+    input.fx.redirectedOffHost;
+
+  const htmlText = input.html.text || "";
+  const htmlSuspended = /Account suspended/i.test(htmlText);
+  const htmlExists =
+    new RegExp(`\\(@${input.handle}\\)`, "i").test(htmlText) ||
+    new RegExp(`og:title"[^>]*content="[^"]*@${input.handle}`, "i").test(
+      htmlText,
+    ) ||
+    new RegExp(`property="og:title" content="[^"]*@${input.handle}`, "i").test(
+      htmlText,
+    );
+  const htmlMissingHint =
+    /Something went wrong/i.test(htmlText) &&
+    !htmlExists &&
+    !/og:title/i.test(htmlText);
+
+  if (fxSuspended || htmlSuspended) {
+    return {
+      kind: "suspended",
+      synUser,
+      fxUser,
+      detail: fxSuspended
+        ? `FxTwitter marks account suspended (HTTP ${input.fx.status})`
+        : "X profile page shows “Account suspended”",
+    };
+  }
+
+  if (fxExists || synExists || htmlExists) {
+    return {
+      kind: "exists",
+      synUser,
+      fxUser,
+      detail: fxExists
+        ? "Resolved via FxTwitter public profile"
+        : synExists
+          ? "Resolved via syndication follow-button"
+          : "Resolved via public X profile HTML",
+    };
+  }
+
+  if (fxNotFound || (htmlMissingHint && input.html.ok)) {
+    return {
+      kind: "not_found",
+      synUser,
+      fxUser,
+      detail: fxNotFound
+        ? input.fx.redirectedOffHost
+          ? "FxTwitter redirected away (typical for unknown handles)"
+          : `FxTwitter: user not found (HTTP ${input.fx.status})`
+        : "X profile HTML has no public account metadata",
+    };
+  }
+
+  return {
+    kind: "inconclusive",
+    synUser,
+    fxUser,
+    detail: `Lookup incomplete (syn=${input.syn.status}, fx=${input.fx.status}, html=${input.html.status})`,
+  };
+}
+
 export const xAdapter: PlatformAdapter = {
   platform: "x",
   async run(ctx: ProbeContext) {
@@ -59,70 +161,149 @@ export const xAdapter: PlatformAdapter = {
 
     try {
       const result = await withTimeout(PROBE_TIMEOUT_MS, async (signal) => {
-        const [syn, fx] = await Promise.all([
+        const [syn, fx, html] = await Promise.all([
           lookupSyndication(ctx.handle, signal),
           lookupFx(ctx.handle, signal),
+          lookupProfileHtml(ctx.handle, signal),
         ]);
-        return { syn, fx };
+        return { syn, fx, html };
       });
 
-      const synUser = result.syn.data?.[0];
-      const fxUser = result.fx.data?.user;
-      const exists = Boolean(synUser?.screen_name || fxUser?.screen_name);
+      const classified = classifyXAccount({
+        ...result,
+        handle: ctx.handle,
+      });
+      const { synUser, fxUser } = classified;
+      const tweetCount = fxUser?.tweets ?? fxUser?.statuses_count;
 
-      if (!exists) {
-        const notFound =
-          result.fx.data?.code === 404 ||
-          (result.syn.status === 200 &&
-            (!result.syn.data || result.syn.data.length === 0));
-
+      if (classified.kind === "not_found") {
         account = {
           platform: "x",
           handle: ctx.handle,
           exists: false,
-          suspended: result.fx.data?.code === 403,
+          suspended: false,
         };
-
         signals.push(
           makeSignal({
             platform: "x",
             signalKey: "x.account_status",
             label: "Account status",
-            status: notFound ? "restricted" : "inconclusive",
-            confidence: notFound ? "high" : "medium",
+            status: "not_found",
+            confidence: "high",
             evidence: {
-              method: "Public profile lookup (syndication + fxtwitter)",
-              observed: notFound
-                ? "Profile not found"
-                : `Lookup incomplete (syn=${result.syn.status}, fx=${result.fx.status})`,
-              expected: "Public profile metadata",
+              method: "Public profile lookup (FxTwitter + X HTML)",
+              observed: `Account does not exist — ${classified.detail}`,
+              expected: "A real public X account",
               manualUrl: profileUrl("x", ctx.handle),
-              reasonCode: notFound ? "not_found" : "lookup_incomplete",
+              reasonCode: "not_found",
             },
             probeMs: Date.now() - started,
           }),
         );
-
         return {
           account,
           signals: [
             ...signals,
-            ...fixedInconclusives(ctx.handle, Date.now() - started, "account_missing"),
+            ...fixedInconclusives(
+              ctx.handle,
+              Date.now() - started,
+              "account_not_found",
+            ),
           ],
           earlyStopReason: "account_not_found",
         };
       }
 
+      if (classified.kind === "suspended") {
+        account = {
+          platform: "x",
+          handle: ctx.handle,
+          exists: false,
+          suspended: true,
+        };
+        signals.push(
+          makeSignal({
+            platform: "x",
+            signalKey: "x.account_status",
+            label: "Account status",
+            status: "restricted",
+            confidence: "high",
+            evidence: {
+              method: "Public profile lookup (FxTwitter + X HTML)",
+              observed: `Account is suspended — ${classified.detail}`,
+              expected: "A live, non-suspended account",
+              manualUrl: profileUrl("x", ctx.handle),
+              reasonCode: "suspended",
+            },
+            probeMs: Date.now() - started,
+          }),
+        );
+        return {
+          account,
+          signals: [
+            ...signals,
+            ...fixedInconclusives(
+              ctx.handle,
+              Date.now() - started,
+              "account_suspended",
+            ),
+          ],
+          earlyStopReason: "account_suspended",
+        };
+      }
+
+      if (classified.kind === "inconclusive") {
+        account = {
+          platform: "x",
+          handle: ctx.handle,
+          exists: false,
+        };
+        signals.push(
+          makeSignal({
+            platform: "x",
+            signalKey: "x.account_status",
+            label: "Account status",
+            status: "inconclusive",
+            confidence: "medium",
+            evidence: {
+              method: "Public profile lookup (FxTwitter + X HTML)",
+              observed: classified.detail,
+              expected: "Public profile metadata",
+              manualUrl: profileUrl("x", ctx.handle),
+              reasonCode: "lookup_incomplete",
+            },
+            probeMs: Date.now() - started,
+          }),
+        );
+        return {
+          account,
+          signals: [
+            ...signals,
+            ...fixedInconclusives(
+              ctx.handle,
+              Date.now() - started,
+              "lookup_incomplete",
+            ),
+          ],
+          earlyStopReason: "lookup_incomplete",
+        };
+      }
+
+      // exists
       const isProtected = Boolean(synUser?.protected || fxUser?.protected);
       account = {
         platform: "x",
-        handle: (synUser?.screen_name || fxUser?.screen_name || ctx.handle).toLowerCase(),
+        handle: (
+          synUser?.screen_name ||
+          fxUser?.screen_name ||
+          ctx.handle
+        ).toLowerCase(),
         exists: true,
         protectedOrPrivate: isProtected,
         displayName: synUser?.name || fxUser?.name,
         publicFlags: {
           possibly_sensitive: fxUser?.possibly_sensitive ?? null,
-          statuses_count: fxUser?.statuses_count ?? null,
+          statuses_count: tweetCount ?? null,
         },
       };
 
@@ -136,8 +317,8 @@ export const xAdapter: PlatformAdapter = {
           evidence: {
             method: "Public profile lookup",
             observed: isProtected
-              ? "Account exists but is protected"
-              : `Public account @${account.handle}`,
+              ? `Account exists but is protected — ${classified.detail}`
+              : `Account exists (public) — @${account.handle}. ${classified.detail}`,
             expected: "Public, non-suspended account",
             manualUrl: profileUrl("x", account.handle),
             reasonCode: isProtected ? "protected" : "public_ok",
@@ -151,13 +332,16 @@ export const xAdapter: PlatformAdapter = {
           account,
           signals: [
             ...signals,
-            ...fixedInconclusives(account.handle, Date.now() - started, "protected"),
+            ...fixedInconclusives(
+              account.handle,
+              Date.now() - started,
+              "protected",
+            ),
           ],
           earlyStopReason: "protected",
         };
       }
 
-      // Search suggestion: exact public resolution is a medium-confidence proxy for typeahead.
       signals.push(
         makeSignal({
           platform: "x",
@@ -167,7 +351,7 @@ export const xAdapter: PlatformAdapter = {
           confidence: "medium",
           evidence: {
             method: "Public screen_name resolution (typeahead proxy approximation)",
-            observed: `Handle @${account.handle} resolves on public syndication lookup`,
+            observed: `Handle @${account.handle} resolves on a public profile lookup`,
             expected: "Handle appears in search suggestions when typing prefix",
             manualUrl: `https://x.com/search?q=${encodeURIComponent(account.handle)}&f=user`,
             reasonCode: "resolves_publicly",
@@ -175,7 +359,7 @@ export const xAdapter: PlatformAdapter = {
           probeMs: Date.now() - started,
         }),
       );
-      signals.push(await probeSearchBan(account.handle, fxUser?.statuses_count));
+      signals.push(await probeSearchBan(account.handle, tweetCount));
       signals.push(await probeGhostBan(account.handle));
       signals.push(
         makeSignal({
@@ -201,7 +385,12 @@ export const xAdapter: PlatformAdapter = {
           platform: "x",
           signalKey: "x.sensitive_flag",
           label: "Sensitive / NSFW label",
-          status: sensitive === true ? "restricted" : sensitive === false ? "clear" : "inconclusive",
+          status:
+            sensitive === true
+              ? "restricted"
+              : sensitive === false
+                ? "clear"
+                : "inconclusive",
           confidence: sensitive == null ? "low" : "medium",
           evidence: {
             method: "Public profile flag read",
@@ -267,7 +456,11 @@ export const xAdapter: PlatformAdapter = {
   },
 };
 
-function fixedInconclusives(handle: string, ms: number, reason: string): SignalResult[] {
+function fixedInconclusives(
+  handle: string,
+  ms: number,
+  reason: string,
+): SignalResult[] {
   const keys: Array<[string, string]> = [
     ["x.search_suggestion", "Search suggestion"],
     ["x.search_ban", "Search ban (from:handle)"],
@@ -317,8 +510,6 @@ async function probeSearchBan(
   }
 
   try {
-    // Public HTML search is often gated; try fxtwitter timeline as weak proxy for "posts exist"
-    // and leave search-index verdict honest when we cannot open Latest search.
     const res = await withTimeout(PROBE_TIMEOUT_MS, (signal) =>
       fetchText(manualUrl, signal, {
         headers: { Accept: "text/html" },

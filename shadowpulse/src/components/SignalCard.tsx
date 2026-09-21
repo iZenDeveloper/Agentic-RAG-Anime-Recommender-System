@@ -7,10 +7,15 @@ import type { Verdict } from "@/lib/verdict";
 
 const STATUS_KEY: Record<
   SignalStatus,
-  "statusClear" | "statusRestricted" | "statusInconclusive" | "statusNA"
+  | "statusClear"
+  | "statusRestricted"
+  | "statusNotFound"
+  | "statusInconclusive"
+  | "statusNA"
 > = {
   clear: "statusClear",
   restricted: "statusRestricted",
+  not_found: "statusNotFound",
   inconclusive: "statusInconclusive",
   not_applicable: "statusNA",
 };
@@ -18,6 +23,7 @@ const STATUS_KEY: Record<
 const STATUS_MARK: Record<SignalStatus, string> = {
   clear: "✓",
   restricted: "✗",
+  not_found: "∅",
   inconclusive: "?",
   not_applicable: "—",
 };
@@ -25,33 +31,54 @@ const STATUS_MARK: Record<SignalStatus, string> = {
 const STATUS_CLASS: Record<SignalStatus, string> = {
   clear: "check-ok",
   restricted: "check-ban",
+  not_found: "check-missing",
   inconclusive: "check-unknown",
   not_applicable: "check-na",
 };
 
 const VERDICT_KEY: Record<
   Verdict,
-  "verdictNotBanned" | "verdictRestricted" | "verdictUnclear"
+  | "verdictNotBanned"
+  | "verdictRestricted"
+  | "verdictNotFound"
+  | "verdictUnclear"
 > = {
   not_banned: "verdictNotBanned",
   restricted: "verdictRestricted",
+  not_found: "verdictNotFound",
   unclear: "verdictUnclear",
 };
 
 const VERDICT_HINT: Record<
   Verdict,
-  "verdictNotBannedHint" | "verdictRestrictedHint" | "verdictUnclearHint"
+  | "verdictNotBannedHint"
+  | "verdictRestrictedHint"
+  | "verdictNotFoundHint"
+  | "verdictUnclearHint"
 > = {
   not_banned: "verdictNotBannedHint",
   restricted: "verdictRestrictedHint",
+  not_found: "verdictNotFoundHint",
   unclear: "verdictUnclearHint",
 };
 
 const VERDICT_CLASS: Record<Verdict, string> = {
   not_banned: "verdict-ok",
   restricted: "verdict-ban",
+  not_found: "verdict-missing",
   unclear: "verdict-unknown",
 };
+
+export function verdictChipClass(verdict: Verdict): string {
+  if (verdict === "not_banned") return "verdict-chip-ok";
+  if (verdict === "restricted") return "verdict-chip-ban";
+  if (verdict === "not_found") return "verdict-chip-missing";
+  return "verdict-chip-unknown";
+}
+
+export function verdictLabel(verdict: Verdict, locale: Locale): string {
+  return t(locale, VERDICT_KEY[verdict]);
+}
 
 export function VerdictBanner({
   verdict,
