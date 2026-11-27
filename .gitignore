@@ -11,3 +11,6 @@ ANIME_RECOMMENDER.egg-info/
 .vscode/
 .idea/
 *.sqlite3-journal
+node_modules/
+.next/
+*.tsbuildinfo
